@@ -1,0 +1,2440 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Simple Hindi Book Maker — 5.5×8.5 KDP V4.2</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#e9e9e9;font-family:"Noto Sans Devanagari","Nirmala UI","Mangal",Arial,sans-serif;color:#172033}
+button{font:inherit}
+.top{position:sticky;top:0;z-index:20;background:#102f63;color:#fff;padding:10px 12px;box-shadow:0 2px 8px #0003}
+.top h1{font-size:18px;margin:0 0 8px}
+.toolbar{display:flex;gap:6px;flex-wrap:wrap}
+.toolbar button{border:0;border-radius:8px;padding:8px 10px;background:#fff;color:#12315f;font-weight:700;cursor:pointer}
+.toolbar button.primary{background:#f0c45b}
+.toolbar button.danger{background:#ffd9d9;color:#8b1e1e}
+.wrap{max-width:900px;margin:14px auto 40px;padding:0 10px}
+.help{max-width:139.7mm;margin:0 auto 12px;background:white;border-radius:10px;padding:10px 13px;font-size:13px;color:#39465c}
+.page-card{width:139.7mm;margin:0 auto 22px}
+.page{width:139.7mm;height:215.9mm;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;margin:auto;position:relative;padding:13.97mm 12.7mm 16.51mm;outline:1px solid #777;outline-offset:-1px;box-shadow:0 4px 16px #0002;overflow:hidden}
+.page.odd-page{padding-left:15.9mm;padding-right:12.7mm}
+.page.even-page{padding-left:12.7mm;padding-right:15.9mm}
+.page-inner{position:relative;z-index:2;height:185.42mm;overflow:hidden}
+.page.selected{outline:4px solid #f0c45b;outline-offset:3px}
+.block{margin:0 0 10px;position:relative;break-inside:avoid}
+.heading{font-size:16pt;font-weight:700;line-height:21pt;letter-spacing:0pt;color:#000;text-align:center;margin:12pt 0 7pt}
+.chapter{font-size:19px;font-weight:800;color:#fff;background:#000;border-radius:0;padding:8px 13px;display:block;margin-bottom:10px}
+.chapter-layout{display:grid;grid-template-columns:28mm minmax(0,1fr);min-height:27mm;border:1pt solid #000;background:#fff;margin:0 0 12pt;break-inside:avoid;overflow:hidden}
+.chapter-no-box{background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-size:30pt;font-weight:800;line-height:30pt;letter-spacing:0pt;padding:6pt 8pt;min-height:27mm}
+.chapter-title-box{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:6pt 10pt;min-width:0}
+.chapter-hi{font-size:14pt;font-weight:700;line-height:20pt;letter-spacing:0pt;color:#000}
+.chapter-en{font-size:11pt;font-weight:600;line-height:13pt;letter-spacing:0pt;color:#000;margin-top:2pt}
+.chapter-fields{display:none}
+.subheading{font-size:14pt;font-weight:700;line-height:19pt;letter-spacing:0pt;color:#000;border-left:0;padding:0;background:#fff;margin:12pt 0 6pt}
+.miniheading{font-size:12pt;font-weight:600;line-height:16pt;letter-spacing:0pt;color:#000;padding:0;background:#fff;margin:8pt 0 4pt}
+.box.no-box,.quote.no-box,.sankalp.no-box{border-color:transparent;border-radius:0;background:#fff}
+.mastertext{position:absolute;z-index:10;margin:0;padding:0;white-space:pre-wrap;overflow:visible;touch-action:none;cursor:move;user-select:none;-webkit-user-select:none;color:#000;max-width:100%}
+.mastertext.master-editing{outline:1px dashed #555;outline-offset:2px}
+.master-handle{position:absolute;right:-5px;top:-5px;width:10px;height:10px;border:1px solid #000;background:#fff;border-radius:50%;display:none}
+.mastertext:hover .master-handle{display:block}
+.size-control{display:none;padding:8px 14px 0}
+.size-control label{font-size:13px;font-weight:700}
+.size-control select{width:100%;padding:9px;font:inherit;border:1px solid #ddd;border-radius:7px;margin-top:4px}
+.master-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 14px 0}
+.master-controls label{font-size:12px;font-weight:700;color:#39465c;display:block}
+.master-controls input,.master-controls select{width:100%;padding:9px;border:1px solid #ddd;border-radius:7px;font:inherit;margin-top:4px}
+.master-controls .wide{grid-column:1/-1}
+.choice-buttons{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;padding:16px}
+.choice-buttons button{min-width:130px}
+
+.text{font-size:11pt;font-weight:400;line-height:15.5pt;letter-spacing:0pt;text-align:justify;white-space:pre-wrap;margin:0 0 5pt}
+.points{font-size:11pt;font-weight:400;line-height:15.5pt;letter-spacing:0pt;text-align:left;padding-left:0;margin:0 0 5pt}
+.points div{margin:0 0 2.5pt}
+.box{border:1pt solid #000;border-radius:6pt;padding:8pt 10pt;background:#fff;line-height:15.5pt;font-size:11pt;font-weight:500;letter-spacing:0pt;text-align:left;margin:7pt 0 8pt}
+.quote{font-size:11pt;font-weight:550;line-height:16pt;letter-spacing:0pt;text-align:center;color:#000;border:1pt solid #000;border-radius:6pt;padding:8pt 12pt;margin:8pt 0 9pt}
+.sankalp{border:1pt solid #000;border-radius:6pt;padding:9pt 11pt;background:#fff;line-height:15.5pt;font-size:11pt;font-weight:500;letter-spacing:0pt;text-align:left;margin:0 0 10pt}
+.sankalp .title{font-weight:700;color:#000;font-size:15pt;line-height:19pt;letter-spacing:0pt;margin:0 0 6pt}
+.page-num{position:absolute;bottom:6.5mm;left:50%;transform:translateX(-50%);z-index:3;font-weight:700;color:#000}
+.status{position:fixed;right:12px;bottom:12px;background:#102f63;color:white;padding:8px 11px;border-radius:9px;display:none;z-index:100}
+.modal{display:none;position:fixed;inset:0;background:#0008;z-index:100;align-items:center;justify-content:center;padding:15px}
+.editorBox{width:min(650px,96vw);background:#fff;border-radius:14px;box-shadow:0 10px 40px #0005;overflow:hidden}
+.editorHead{background:#102f63;color:#fff;padding:12px 14px;display:flex;justify-content:space-between;align-items:center}
+.editorHead button{background:transparent;color:#fff;border:0;font-size:20px}
+.editorBox textarea{display:block;width:100%;min-height:220px;border:0;outline:0;padding:15px;font-size:17px;line-height:1.7;font-family:inherit;resize:vertical}
+.editorBox input{display:block;width:100%;border:1px solid #ddd;outline:0;padding:12px 15px;font-size:16px;font-family:inherit}
+.hint{padding:0 15px 8px;font-size:12px;color:#566}
+.editorActions{display:flex;justify-content:flex-end;gap:8px;padding:10px 14px;border-top:1px solid #ddd}
+.editorActions button{border:0;border-radius:8px;padding:9px 13px;background:#eee}
+.editorActions .primary{background:#f0c45b;color:#102f63;font-weight:800}
+.editorActions .danger{background:#ffd9d9;color:#8b1e1e}
+#projectFile{display:none}
+.video-link{font-size:10pt;font-weight:700;line-height:13pt;letter-spacing:0pt;text-align:center;margin:0 0 5pt;padding:0;border:0;border-radius:0;display:flex;align-items:center;justify-content:center;gap:8pt}
+.video-link.draggable-video{position:absolute;z-index:9;margin:0;padding:4px 0;touch-action:none;cursor:move;user-select:none;-webkit-user-select:none;max-width:100%}.video-link.video-dragging{outline:1px dashed #555;outline-offset:2px}
+.video-link .video-icon{font-size:14pt;margin-right:2pt}
+.video-link a{color:#000;text-decoration:none;font-weight:700;cursor:pointer}.video-qr{width:28mm;height:28mm;object-fit:contain;display:inline-block}
+/* Special Normal Text: preserves explicit line breaks exactly as entered */
+.specialtext{font-size:11pt;font-weight:400;line-height:15.5pt;letter-spacing:0pt;text-align:left;white-space:pre-wrap;margin:0 0 5pt}
+/* Inverted-comma emphasis inside Normal Text */
+.text .quote-emphasis{font-weight:500}
+
+/* KDP 5.5 x 8.5 Index */
+.index-page{padding:13.97mm 12.7mm 16.51mm!important}
+.index-page.odd-page{padding-left:15.9mm!important;padding-right:12.7mm!important}
+.index-page.even-page{padding-left:12.7mm!important;padding-right:15.9mm!important}
+.index-title{text-align:center;font-size:20pt;font-weight:800;line-height:24pt;letter-spacing:0pt;margin:0 0 7pt;color:#000}
+.index-content{font-size:9.5pt;line-height:12.5pt}
+.index-table{width:100%;border-collapse:collapse;table-layout:fixed;color:#000;font-size:9.5pt;line-height:12.5pt}
+.index-table th,.index-table td{border:.75pt solid #000;padding:3.5pt 4pt;vertical-align:top}
+.index-table th{font-size:9.5pt;font-weight:700;line-height:12pt;text-align:center;background:#fff}
+.index-table th:nth-child(1){width:24mm}.index-table th:nth-child(3){width:22mm}
+.index-chapter-row td{font-size:9.5pt}
+.index-chapter-row .idx-no{text-align:center;font-size:9.5pt;font-weight:600;line-height:12pt}
+.index-page .index-chapter-name{font-size:10.5pt;font-weight:700;line-height:13pt;letter-spacing:0pt}
+.index-page .index-en{font-size:9pt;font-weight:650;line-height:11pt;letter-spacing:0pt;margin-top:1pt}
+.index-page .index-page-no{font-size:10pt;font-weight:700;line-height:12pt;text-align:center;cursor:text}
+.index-topics-label{font-size:8.5pt;font-weight:600;line-height:11pt;margin-bottom:2pt}
+.index-topics div{font-size:9.5pt;font-weight:450;line-height:12.5pt;letter-spacing:0pt;margin:1pt 0}
+.index-topics div::first-letter{font-weight:800}
+.index-page.locked .index-chapter-row{cursor:pointer}
+.index-page.locked .index-page-no{background:#f7f7f7}
+
+@media(max-width:850px){.page-card{overflow:auto;width:140mm}}
+@media print{
+@page{size:5.5in 8.5in;margin:0}
+*{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body{background:white}
+.top,.help,.status,.modal{display:none!important}
+.wrap{margin:0;padding:0}
+.page-card{margin:0}
+.page{box-shadow:none;break-after:page;page-break-after:always;margin:0;outline:none!important;width:139.7mm!important;height:215.9mm!important;min-width:139.7mm!important;max-width:139.7mm!important;min-height:215.9mm!important;max-height:215.9mm!important}
+.page:last-child{break-after:auto;page-break-after:auto}
+.page.odd-page{padding-left:15.9mm;padding-right:12.7mm}
+.page.even-page{padding-left:12.7mm;padding-right:15.9mm}
+}
+</style>
+</head>
+<body>
+<div class="top">
+<h1>📖 Simple Hindi Book Maker — 5.5×8.5 KDP V4.2</h1>
+<div class="toolbar">
+<button onclick="openEditor('heading')">🔵 Heading</button>
+<button onclick="openEditor('chapter')">📘 Chapter Heading</button>
+<button onclick="openEditor('subheading')">🔷 Sub Heading</button>
+<button onclick="openEditor('miniheading')">▫️ Mini Heading</button>
+<button onclick="openEditor('text')">📝 Normal Text</button>
+<button onclick="openEditor('specialtext')">📄 Special Normal Text</button>
+<button onclick="openEditor('points')">🔹 Points</button>
+<button onclick="openEditor('box')">📦 Important Box</button>
+<button onclick="openEditor('quote')">💬 Quote</button>
+<button onclick="openEditor('sankalp')">🎯 अध्याय का संकल्प</button>
+<button onclick="openIndexManager()">📑 Index</button>
+<button onclick="openMasterText()">🧠 Master Text</button>
+<button onclick="addPrelimPage()">📄 बिना Page No. Page</button>
+<button onclick="addVideoLink()">🎥 Video Link</button>
+<button class="primary" onclick="addPage()">＋ नया Page</button>
+<button onclick="saveProject()">💾 Save Project</button>
+<button onclick="openProject()">📂 Open Project</button>
+<button onclick="exportFullPDF()">📄 Full Book PDF</button>
+<button onclick="exportSelectedPDF()">📄 Current Page PDF</button>
+<button onclick="exportWordManuscript()">📝 Word Manuscript</button>
+<button class="danger" onclick="clearBook()">🗑 Clear</button>
+</div>
+</div>
+
+<div class="wrap">
+<div class="help">
+<b>Automatic Page Limit ON है:</b> हर 5.5×8.5 inch page की fixed content limit है। Content limit से ज्यादा होने पर Book Maker खुद अगला page बनाकर बाकी content वहाँ डाल देगा।
+Text को बीच में शब्द काटकर नहीं बाँटा जाएगा। कम content होगा तो page खाली हिस्सा रखेगा; ज्यादा content एक page में नहीं जाएगा। Master Text को page के अंदर drag करके अपनी जगह रखा जा सकता है।
+किसी block को बदलने के लिए उस पर <b>double-click</b> करें। “बिना Page No. Page” हमेशा Page No. 1 से पहले रहेगा।
+</div>
+<div id="book"></div>
+</div>
+
+<div id="editorModal" class="modal">
+<div class="editorBox">
+<div class="editorHead"><b id="editorTitle">Content लिखें</b><button onclick="closeEditor()">✕</button></div>
+<div id="chapterFields" class="chapter-fields">
+<input id="chapterNo" placeholder="Chapter No. (जैसे 1)">
+<input id="chapterHindi" placeholder="Chapter Name in Hindi">
+<input id="chapterEnglish" placeholder="Chapter Name in English">
+</div>
+<textarea id="editorText" placeholder="यहाँ अपना content लिखें..."></textarea>
+<div id="fontSizeControl" class="size-control"><label id="fontSizeLabel">Font Size</label><select id="fontSizeSelect"></select></div>
+<div id="pointsHint" class="hint">Points / संकल्प के लिए हर point को नई line में लिखें।</div>
+<div id="specialTextHint" class="hint" style="display:none">इस option में आप जितनी स्पष्ट नई lines में text लिखेंगे, वही line breaks उसी तरह रखे जाएँगे।</div>
+<div class="editorActions"><button onclick="closeEditor()">Cancel</button><button id="editorAddBtn" class="primary" onclick="insertEdited()">✅ Page में जोड़ें</button><button id="editorUpdateBtn" class="primary" style="display:none" onclick="updateEdited()">💾 Update</button><button id="editorDeleteBtn" class="danger" style="display:none" onclick="deleteEdited()">🗑 Delete</button></div>
+</div>
+</div>
+
+<div id="videoModal" class="modal">
+<div class="editorBox">
+<div class="editorHead"><b>Video Link जोड़ें</b><button onclick="closeVideo()">✕</button></div>
+<input id="videoTitle" placeholder="Video का Title लिखें">
+<input id="videoUrl" placeholder="YouTube या अन्य https:// URL यहाँ डालें">
+<div class="hint">उदाहरण: https://www.youtube.com/watch?v=...</div>
+<div class="editorActions"><button onclick="closeVideo()">Cancel</button><button class="primary" onclick="insertVideo()">✅ Link जोड़ें</button></div>
+</div>
+</div>
+
+<div id="editModal" class="modal">
+<div class="editorBox">
+<div class="editorHead"><b>Block Edit करें</b><button onclick="closeEdit()">✕</button></div>
+<textarea id="editText"></textarea>
+<div id="editFontSizeControl" class="size-control" style="display:none"><label id="editFontSizeLabel">Font Size</label><select id="editFontSizeSelect"></select></div>
+<div class="editorActions"><button onclick="closeEdit()">Cancel</button><button class="primary" onclick="updateEdited()">💾 Update</button><button class="danger" onclick="deleteEdited()">🗑 Delete</button></div>
+</div>
+</div>
+
+<div id="indexModal" class="modal"><div class="editorBox"><div class="editorHead"><b>अनुक्रमणिका तैयार करें</b><button onclick="closeIndexManager()">✕</button></div><div style="padding:14px"><input id="idxHindi" placeholder="अध्याय का नाम — हिन्दी"><input id="idxEnglish" placeholder="Chapter Name — English"><input id="idxPageNo" placeholder="पृष्ठ संख्या (जैसे 1-12)"><textarea id="idxTopics" placeholder="अध्ययन सामग्री — हर विषय नई line में लिखें"></textarea><div class="hint">अध्याय क्रम संख्या अपने आप 1, 2, 3... चलेगी। अधिकतम 18 अध्याय।</div></div><div class="editorActions"><button onclick="closeIndexManager()">Cancel</button><button onclick="addIndexChapter()">＋ अध्याय जोड़ें</button><button class="primary" onclick="completeIndex()">🔒 Complete Index</button></div></div></div>
+<div id="masterModal" class="modal"><div class="editorBox">
+<div class="editorHead"><b id="masterModalTitle">🧠 Master Text लिखें</b><button onclick="closeMasterText()">✕</button></div>
+<textarea id="masterTextInput" placeholder="यहाँ अपना Master Text लिखें..." style="min-height:180px"></textarea>
+<div class="master-controls">
+<label>Font Family<select id="masterFont" disabled><option value="Noto Sans Devanagari" selected>Noto Sans Devanagari</option></select></label>
+<label>Font Size (pt)<input id="masterSize" type="number" min="8" max="30" step="0.5" value="11"></label>
+<label>Boldness (100–900)<input id="masterWeight" type="number" min="400" max="800" step="50" value="400"></label>
+<label>Line Height (pt)<input id="masterLineHeight" type="number" min="8" max="40" step="0.5" value="15.5"></label>
+<label>Alignment<select id="masterAlign"><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option><option value="justify">Justify</option></select></label>
+<label>Letter Spacing (pt)<input id="masterLetterSpacing" type="number" min="-1" max="2" step="0.1" value="0"></label>
+<label class="wide">Default Paragraph Bottom Space (pt)<input id="masterMargin" type="number" min="0" max="30" step="0.5" value="5"></label>
+</div>
+<div class="hint">Master Text current page के अंदर रहेगा। जोड़ने के बाद इसे touch/mouse से drag करके page में कहीं भी रखा जा सकता है। Double-click करके फिर edit करें।</div>
+<div class="editorActions"><button onclick="closeMasterText()">Cancel</button><button id="masterAddBtn" class="primary" onclick="insertMasterText()">✅ Page में जोड़ें</button><button id="masterUpdateBtn" class="primary" style="display:none" onclick="updateMasterText()">💾 Update</button><button id="masterDeleteBtn" class="danger" style="display:none" onclick="deleteMasterText()">🗑 Delete</button></div>
+</div></div>
+<div id="choiceModal" class="modal"><div class="editorBox"><div class="editorHead"><b id="choiceTitle">विकल्प चुनें</b><button onclick="closeChoice()">✕</button></div><div id="choiceButtons" class="choice-buttons"></div></div></div>
+<input id="projectFile" type="file" accept=".json" onchange="importProject(event)">
+<div id="status" class="status"></div>
+
+<script>
+const book=document.getElementById('book');
+let currentPage=null, editorType=null, editingBlock=null;
+const titles={heading:"Heading लिखें",chapter:"Chapter Heading लिखें",subheading:"Sub Heading लिखें",miniheading:"Mini Heading लिखें",text:"Normal Text लिखें",specialtext:"Special Normal Text लिखें",points:"Points लिखें",box:"Important Box लिखें",quote:"Quote लिखें",sankalp:"अध्याय का संकल्प लिखें"};
+const defaultSizes={heading:19,subheading:16,miniheading:13};
+let masterEditingBlock=null, masterDrag=null, choiceCallback=null;
+
+const indexData=[];
+
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function toast(msg){const s=document.getElementById('status');s.textContent=msg;s.style.display='block';clearTimeout(window.__toast);window.__toast=setTimeout(()=>s.style.display='none',1800);}
+function numberedPages(){return [...document.querySelectorAll('.page:not(.prelim-page)')];}
+function firstNumberedCard(){return [...document.querySelectorAll('.page-card')].find(c=>c.querySelector('.page:not(.prelim-page)'));}
+function makePage(kind='numbered',insertBeforeFirst=false){
+ const card=document.createElement('div');card.className='page-card';
+ const p=document.createElement('div');p.className='page '+kind;
+ p.innerHTML='<div class="page-inner"></div><div class="page-num"></div>';
+ card.appendChild(p);
+ if(insertBeforeFirst){const first=firstNumberedCard();if(first)book.insertBefore(card,first);else book.appendChild(card);}else book.appendChild(card);
+ renumber();return p;
+}
+function addPage(){
+ const p=makePage('numbered',false); currentPage=p.querySelector('.page-inner'); saveProjectAuto(); p.scrollIntoView({behavior:'smooth',block:'center'}); toast('नया 5.5×8.5 page तैयार है');
+}
+function addPrelimPage(){
+ const p=makePage('prelim-page',true); 
+ currentPage=p.querySelector('.page-inner');
+ saveProjectAuto(); toast('बिना Page No. वाला page, Page No. 1 से पहले जोड़ दिया गया');
+}
+function lastNumberedInner(){const ps=numberedPages();return ps.length?ps[ps.length-1].querySelector('.page-inner'):null;}
+function ensureEditablePage(){
+ if(!currentPage || !document.body.contains(currentPage) || currentPage.closest('.index-page,.shlok-page')) currentPage=lastNumberedInner();
+ if(!currentPage){const prelim=document.querySelector('.prelim-page .page-inner'); if(prelim) currentPage=prelim; else {const p=makePage('numbered',false);currentPage=p.querySelector('.page-inner');}}
+}
+function setFontSizeOptions(type,current){
+ const box=document.getElementById('fontSizeControl'),sel=document.getElementById('fontSizeSelect'),lab=document.getElementById('fontSizeLabel');
+ if(['specialtext','points'].includes(type)){const d=12,vals=[12,13,14];sel.innerHTML=vals.map(v=>`<option value="${v}">${v}px${v===d?' — Default':''}</option>`).join('');const cv=parseFloat(current||d);sel.value=String(vals.reduce((a,b)=>Math.abs(b-cv)<Math.abs(a-cv)?b:a,12));lab.textContent=type==='points'?'Font Size (Points)':'Font Size (Special Normal Text)';box.style.display='block';return}
+ if(!['heading','subheading','miniheading'].includes(type)){box.style.display='none';return}
+ const d=defaultSizes[type]; let vals=type==='heading'?[d-2,d-1,d,d+1,d+2]:type==='subheading'?[d-2,d-1,d]:[d-1,d,d+1];
+ sel.innerHTML=vals.map(v=>`<option value="${v}">${v}px${v===d?' — Default':''}</option>`).join('');
+ const cv=parseFloat(current||d); const best=vals.reduce((a,b)=>Math.abs(b-cv)<Math.abs(a-cv)?b:a,vals[0]);sel.value=String(best);lab.textContent=type==='heading'?'Font Size (Heading)':type==='subheading'?'Font Size (Sub Heading)':'Font Size (Mini Heading)';box.style.display='block';
+}
+function setEditorMode(mode){
+ const add=document.getElementById('editorAddBtn'),up=document.getElementById('editorUpdateBtn'),del=document.getElementById('editorDeleteBtn');
+ const edit=mode==='edit'; add.style.display=edit?'none':''; up.style.display=edit?'':'none'; del.style.display=edit?'':'none';
+}
+function setEditFontSizeOptions(type,current){
+ const box=document.getElementById('editFontSizeControl'),sel=document.getElementById('editFontSizeSelect'),lab=document.getElementById('editFontSizeLabel');
+ if(type!=='specialtext'&&type!=='points'){box.style.display='none';return}
+ const vals=[12,13,14],cv=parseFloat(current||12); sel.innerHTML=vals.map(v=>`<option value="${v}">${v}px${v===12?' — Default':''}</option>`).join('');
+ sel.value=String(vals.reduce((a,b)=>Math.abs(b-cv)<Math.abs(a-cv)?b:a,12)); lab.textContent=type==='points'?'Font Size (Points)':'Font Size (Special Normal Text)'; box.style.display='block';
+}
+function openEditor(type){
+ ensureEditablePage(); editorType=type; editingBlock=null; setEditorMode('add');
+ document.getElementById('editorTitle').textContent=titles[type]||'Content लिखें';
+ const chapterMode=type==='chapter';
+ document.getElementById('chapterFields').style.display=chapterMode?'block':'none';
+ document.getElementById('editorText').style.display=chapterMode?'none':'block';
+ document.getElementById('pointsHint').style.display=(!chapterMode&&(type==='points'||type==='sankalp'))?'block':'none';
+ document.getElementById('specialTextHint').style.display=(!chapterMode&&type==='specialtext')?'block':'none';
+ document.getElementById('editorText').value='';
+ document.getElementById('chapterNo').value='';document.getElementById('chapterHindi').value='';document.getElementById('chapterEnglish').value='';
+ setFontSizeOptions(type,defaultSizes[type]);
+ document.getElementById('editorModal').style.display='flex';
+ setTimeout(()=>document.getElementById(chapterMode?'chapterNo':'editorText').focus(),80);
+}
+function closeEditor(){
+ document.getElementById('editorModal').style.display='none';
+ document.getElementById('chapterFields').style.display='none';
+ document.getElementById('editorText').style.display='block';
+ document.getElementById('specialTextHint').style.display='none';document.getElementById('fontSizeControl').style.display='none';setEditorMode('add');
+}
+function makeChapterBlock(no,hi,en){
+ const b=document.createElement('div');
+ b.className='block chapter-layout';
+ b.dataset.chapterNo=no; b.dataset.chapterHindi=hi; b.dataset.chapterEnglish=en;
+ b.innerHTML='<div class="chapter-no-box">'+esc(no)+'</div><div class="chapter-title-box"><div class="chapter-hi">'+esc(hi)+'</div><div class="chapter-en">('+esc(en)+')</div></div>';
+ return b;
+}
+function makeBlock(type,val,opts={}){
+ const b=document.createElement('div');b.className='block '+type;
+ if(type==='points'||type==='sankalp'){
+   const arr=val.split(/\n+/).map(x=>x.trim()).filter(Boolean);
+   if(type==='points'){const ps=opts.size||12;b.style.fontSize=ps+'px';b.innerHTML=arr.map(x=>'<div>• '+esc(x.replace(/^[-•✓➜]\s*/,''))+'</div>').join('');}
+   else {b.innerHTML='<div class="title">अध्याय का संकल्प</div>'+arr.map(x=>'<div>'+esc(x.replace(/^[-•✓➜]\s*/,''))+'</div>').join('');}
+ }else if(type==='chapter'){
+   const parts=String(val).split('\n');return makeChapterBlock(parts[0]||'',parts[1]||'',parts.slice(2).join('\n')||'');
+ }else if(type==='text'){
+   const safe=esc(val);b.innerHTML=safe.replace(/(["“”][^"“”\n]+["“”])/g,'<span class="quote-emphasis">$1</span>');
+ }else if(type==='specialtext'){b.textContent=val;b.style.fontSize=(opts.size||12)+'px';}
+ else b.textContent=val;
+ if(type==='heading'||type==='subheading'||type==='miniheading'){b.style.fontSize=(opts.size||defaultSizes[type])+'px';b.style.textAlign=opts.align||'center';b.dataset.fontSize=opts.size||defaultSizes[type];b.dataset.align=opts.align||'center';}
+ if((type==='box'||type==='quote'||type==='sankalp')&&opts.boxed===false)b.classList.add('no-box');
+ if(type==='specialtext'||type==='points')b.dataset.fontSize=opts.size||12;
+ if(type==='mastertext'){}
+ return b;
+}
+
+function fits(inner){return inner.scrollHeight<=inner.clientHeight+1;}
+function addContentWithAutoPagination(type,val,opts={}){
+ ensureEditablePage();
+ if(type==='text'||type==='box'||type==='quote'){
+   let words=val.split(/\s+/).filter(Boolean);
+   while(words.length){
+     const test=makeBlock(type,words.join(' '),opts);currentPage.appendChild(test);
+     if(fits(currentPage)){break;}
+     test.remove();
+     let lo=1,hi=words.length-1,best=0;
+     while(lo<=hi){const mid=Math.floor((lo+hi)/2),c=makeBlock(type,words.slice(0,mid).join(' '),opts);currentPage.appendChild(c);const ok=fits(currentPage);c.remove();if(ok){best=mid;lo=mid+1}else hi=mid-1;}
+     if(best===0){const p=makePage('numbered',false);currentPage=p.querySelector('.page-inner');continue;}
+     currentPage.appendChild(makeBlock(type,words.slice(0,best).join(' '),opts));words=words.slice(best);
+     if(words.length){const p=makePage('numbered',false);currentPage=p.querySelector('.page-inner');}
+   }
+ }else if(type==='specialtext'){
+   const lines=val.split('\n');let i=0;
+   while(i<lines.length){
+     let best=i;
+     for(let end=i+1;end<=lines.length;end++){const c=makeBlock(type,lines.slice(i,end).join('\n'),opts);currentPage.appendChild(c);const ok=fits(currentPage);c.remove();if(!ok)break;best=end;}
+     if(best===i){const p=makePage('numbered',false);currentPage=p.querySelector('.page-inner');continue;}
+     currentPage.appendChild(makeBlock(type,lines.slice(i,best).join('\n'),opts));i=best;
+     if(i<lines.length){const p=makePage('numbered',false);currentPage=p.querySelector('.page-inner');}
+   }
+ }else if(type==='points'||type==='sankalp'){
+   const lines=val.split(/\n+/).map(x=>x.trim()).filter(Boolean);let i=0;
+   while(i<lines.length){
+     let best=i;
+     for(let end=i+1;end<=lines.length;end++){const c=makeBlock(type,lines.slice(i,end).join('\n'),opts);currentPage.appendChild(c);const ok=fits(currentPage);c.remove();if(!ok)break;best=end;}
+     if(best===i){const p=makePage('numbered',false);currentPage=p.querySelector('.page-inner');continue;}
+     currentPage.appendChild(makeBlock(type,lines.slice(i,best).join('\n'),opts));i=best;
+     if(i<lines.length){const p=makePage('numbered',false);currentPage=p.querySelector('.page-inner');}
+   }
+ }else{
+   const b=makeBlock(type,val);currentPage.appendChild(b);
+   if(!fits(currentPage)){b.remove();const p=makePage('numbered',false);currentPage=p.querySelector('.page-inner');currentPage.appendChild(makeBlock(type,val,opts));}
+ }
+ renumber();
+}
+function insertEdited(){
+ if(editorType==='chapter'){
+   const no=document.getElementById('chapterNo').value.trim(),hi=document.getElementById('chapterHindi').value.trim(),en=document.getElementById('chapterEnglish').value.trim();
+   if(!no||!hi||!en){alert('Chapter No., Hindi Chapter Name और English Chapter Name तीनों भरें।');return}
+   const b=makeChapterBlock(no,hi,en);currentPage.appendChild(b);
+   if(!fits(currentPage)){b.remove();const p=makePage('numbered',false);currentPage=p.querySelector('.page-inner');currentPage.appendChild(makeChapterBlock(no,hi,en));}
+   renumber();saveProjectAuto();closeEditor();toast('Chapter Heading page में जोड़ दिया गया');return;
+ }
+ const val=document.getElementById('editorText').value;if(!val.trim()){alert('पहले कुछ लिखें।');return}
+ if(['heading','subheading','miniheading'].includes(editorType)){
+   const size=parseFloat(document.getElementById('fontSizeSelect').value)||defaultSizes[editorType];
+   const align=editorType==='heading'?'center':'left';const b=makeBlock(editorType,val.trim(),{size,align});currentPage.appendChild(b);
+   if(!fits(currentPage)){b.remove();const p=makePage('numbered',false);currentPage=p.querySelector('.page-inner');currentPage.appendChild(makeBlock(editorType,val.trim(),{size,align}));}
+   const target=currentPage.lastElementChild;saveProjectAuto();closeEditor();
+   if(editorType==='heading')showChoice('Heading कहाँ जोड़ना चाहते हैं?',[['CENTER','CENTER'],['LEFT','LEFT']],choice=>{target.style.textAlign=choice==='LEFT'?'left':'center';target.dataset.align=target.style.textAlign;saveProjectAuto();toast('Heading जोड़ दी गई');});
+   else toast(titles[editorType]+' page में जोड़ दिया गया');
+   return;
+ }
+ if(editorType==='specialtext'||editorType==='points'){
+   const size=parseFloat(document.getElementById('fontSizeSelect').value)||12; addContentWithAutoPagination(editorType,val,{size}); saveProjectAuto(); closeEditor(); toast(editorType==='points'?'Points page में जोड़ दिए गए':'Special Normal Text page में जोड़ दिया गया'); return;
+ }
+ if(editorType==='box'||editorType==='quote'||editorType==='sankalp'){
+   const type=editorType;closeEditor();showChoice(titles[type]+' कैसे जोड़ना चाहते हैं?',[['WITH BOX','WITH BOX'],['WITHOUT BOX','WITHOUT BOX']],mode=>{addContentWithAutoPagination(type,val.trim(),{boxed:mode==='WITH BOX'});saveProjectAuto();toast(mode==='WITH BOX'?'Box के साथ जोड़ दिया गया':'बिना Box के जोड़ दिया गया');});return;
+ }
+ addContentWithAutoPagination(editorType,val);saveProjectAuto();closeEditor();toast('Content page limit के अनुसार लगा दिया गया');
+}
+
+function renumber(){
+ let n=0;
+ document.querySelectorAll('.page').forEach(p=>{
+   const num=p.querySelector('.page-num');p.classList.remove('odd-page','even-page');
+   if(p.classList.contains('prelim-page')){num.textContent='';return}
+   n++;num.textContent=n;p.classList.add(n%2?'odd-page':'even-page');
+ });
+}
+function addVideoLink(){
+ ensureEditablePage();
+ document.getElementById('videoTitle').value='';document.getElementById('videoUrl').value='';
+ document.getElementById('videoModal').style.display='flex';setTimeout(()=>document.getElementById('videoTitle').focus(),80);
+}
+function closeVideo(){document.getElementById('videoModal').style.display='none';}
+function validUrl(raw){try{const u=new URL(raw.trim());return /^https?:$/.test(u.protocol)?u.href:null}catch(e){return null}}
+function bindVideoDrag(b){
+ b.addEventListener('pointerdown',e=>{if(e.target.closest('a'))return;e.stopPropagation();const inner=b.closest('.page-inner'),r=inner.getBoundingClientRect(),br=b.getBoundingClientRect();b._drag={inner,startX:e.clientX,startY:e.clientY,left:br.left-r.left,top:br.top-r.top};b.classList.add('video-dragging');try{b.setPointerCapture(e.pointerId)}catch(_){}e.preventDefault();},{passive:false});
+ b.addEventListener('pointermove',e=>{const d=b._drag;if(!d)return;let left=d.left+e.clientX-d.startX,top=d.top+e.clientY-d.startY;left=Math.max(0,Math.min(d.inner.clientWidth-b.offsetWidth,left));top=Math.max(0,Math.min(d.inner.clientHeight-b.offsetHeight,top));b.style.left=left+'px';b.style.top=top+'px';e.preventDefault();},{passive:false});
+ const end=()=>{if(b._drag){b._drag=null;b.classList.remove('video-dragging');saveProjectAuto()}};b.addEventListener('pointerup',end);b.addEventListener('pointercancel',end);b._videoBound=true;
+}
+function positionVideoDefault(inner,b){b.classList.add('draggable-video');b.style.left=Math.max(0,(inner.clientWidth-b.offsetWidth)/2)+'px';b.style.top=Math.max(0,(inner.clientHeight-b.offsetHeight)/2)+'px';bindVideoDrag(b);}
+function makeVideoBlock(title,url,mode='with-icon'){
+ const b=document.createElement('div');b.className='video-link block draggable-video';const safe=esc(url),qr=makeOfflineQRDataURL(url,900,2);
+ b.dataset.videoUrl=url;b.dataset.videoTitle=title||'';b.dataset.videoMode=mode;
+ b.innerHTML=(mode==='with-icon'?'<span class="video-icon">🎥</span><a href="'+safe+'" target="_blank" rel="noopener noreferrer">वीडियो देखें</a>':'')+'<img class="video-qr" src="'+qr+'" alt="Video QR Code" loading="eager">';return b;
+}
+function insertVideo(){
+ const title=document.getElementById('videoTitle').value.trim(),url=validUrl(document.getElementById('videoUrl').value);
+ if(!url){alert('कृपया सही https:// या http:// video URL डालें।');return}
+ closeVideo();showChoice('Video Link कैसे जोड़ना चाहते हैं?',[['ONLY BARCODE','ONLY BARCODE'],['WITH ICON','WITH ICON']],mode=>{
+   const b=makeVideoBlock(title,url,mode==='WITH ICON'?'with-icon':'barcode');currentPage.appendChild(b);positionVideoDefault(currentPage,b);
+   saveProjectAuto();renumber();toast(mode==='ONLY BARCODE'?'Only barcode page में जोड़ दिया गया':'Video Link page में जोड़ दिया गया');
+ });
+}
+function showChoice(title,options,cb){choiceCallback=cb;document.getElementById('choiceTitle').textContent=title;const wrap=document.getElementById('choiceButtons');wrap.innerHTML='';options.forEach(([value,label])=>{const b=document.createElement('button');b.className='primary';b.textContent=label;b.onclick=()=>{const f=choiceCallback;choiceCallback=null;closeChoice();if(f)f(value)};wrap.appendChild(b)});document.getElementById('choiceModal').style.display='flex';}
+function closeChoice(){document.getElementById('choiceModal').style.display='none';choiceCallback=null;}
+function closeVideo(){document.getElementById('videoModal').style.display='none';}
+function addVideoLink(){ensureEditablePage();document.getElementById('videoTitle').value='';document.getElementById('videoUrl').value='';document.getElementById('videoModal').style.display='flex';setTimeout(()=>document.getElementById('videoUrl').focus(),80);}
+function validUrl(raw){try{const u=new URL(raw.trim());return /^https?:$/.test(u.protocol)?u.href:null}catch(e){return null}}
+
+function saveProjectAuto(){try{localStorage.setItem('simpleHindiBookMaker_kdp55x85_v41',book.innerHTML)}catch(e){}}
+function saveProject(){
+ const data={app:'Simple Hindi Book Maker',version:'KDP-5.5x8.5-V4.2',savedAt:new Date().toISOString(),html:book.innerHTML};
+ const blob=new Blob([JSON.stringify(data)],{type:'application/json'}),a=document.createElement('a');
+ a.href=URL.createObjectURL(blob);a.download='Meri_Book_Project.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('Project file save हो गई');
+}
+function openProject(){document.getElementById('projectFile').click();}
+function hydrateInteractiveBlocks(){
+ document.querySelectorAll('.mastertext').forEach(b=>{if(!b._masterBound) {bindMasterDrag(b);b._masterBound=true;}});
+ document.querySelectorAll('.video-link').forEach(b=>{if(!b._videoBound){b.classList.add('draggable-video');bindVideoDrag(b);b._videoBound=true;if(!b.style.left||!b.style.top){const inner=b.closest('.page-inner');if(inner)positionVideoDefault(inner,b);}}});
+}
+function importProject(event){
+ const file=event.target.files[0];if(!file)return;
+ const r=new FileReader();r.onload=()=>{try{const data=JSON.parse(r.result);if(!data.html)throw 0;book.innerHTML=data.html;currentPage=lastNumberedInner()||book.querySelector('.page-inner');hydrateInteractiveBlocks();renumber();saveProjectAuto();toast('Project सफलतापूर्वक खुल गया')}catch(e){alert('यह valid Book Maker project file नहीं है।')}event.target.value=''};r.readAsText(file);
+}
+function exportFullPDF(){document.querySelectorAll('.page').forEach(p=>p.classList.remove('selected'));window.print();}
+function exportSelectedPDF(){
+ const pages=numberedPages(),n=prompt('कौन-सा page PDF बनाना है? Page number लिखें:','1');if(n===null)return;
+ const i=parseInt(n,10)-1;if(i<0||i>=pages.length){alert('गलत page number।');return}
+ pages.forEach((p,j)=>p.style.display=j===i?'block':'none');window.print();setTimeout(()=>pages.forEach(p=>p.style.display=''),1000);
+}
+function getBlockType(b){for(const c of b.classList)if(titles[c]||c==='mastertext')return c;return null;}
+function getBlockText(b){
+ if(b.classList.contains('chapter-layout'))return [b.dataset.chapterNo||'',b.dataset.chapterHindi||'',b.dataset.chapterEnglish||''].join('\n');
+ if(b.classList.contains('sankalp'))return [...b.querySelectorAll('div:not(.title)')].map(x=>x.textContent).join('\n');
+ if(b.classList.contains('points'))return [...b.children].map(x=>x.textContent.replace(/^•\s*/,'' )).join('\n');
+ if(b.classList.contains('video-link'))return b.querySelector('a')?.textContent||'';
+ return b.textContent;
+}
+function openEdit(block){
+ if(block.classList.contains('mastertext')){openMasterText(block);return}
+ if(block.classList.contains('video-link')){alert('Video Link को उसके link पर click करके खोला जा सकता है। इसे बदलने के लिए पुराना link delete करके नया Video Link जोड़ें।');return}
+ if(block.classList.contains('chapter-layout')){
+   editorType='chapter'; setEditorMode('edit');
+   document.getElementById('editorTitle').textContent='Chapter Heading लिखें';
+   document.getElementById('chapterFields').style.display='block';
+   document.getElementById('editorText').style.display='none';
+   document.getElementById('pointsHint').style.display='none';
+   document.getElementById('chapterNo').value=block.dataset.chapterNo||'';
+   document.getElementById('chapterHindi').value=block.dataset.chapterHindi||'';
+   document.getElementById('chapterEnglish').value=block.dataset.chapterEnglish||'';
+   editingBlock=block;
+   document.getElementById('editorModal').style.display='flex';
+   setTimeout(()=>document.getElementById('chapterNo').focus(),80);
+   return;
+ }
+ editingBlock=block;
+ const bt=getBlockType(block);
+ if(['heading','subheading','miniheading'].includes(bt)){
+   editorType=bt;setEditorMode('edit');document.getElementById('editorTitle').textContent=titles[bt];document.getElementById('chapterFields').style.display='none';document.getElementById('editorText').style.display='block';document.getElementById('pointsHint').style.display='none';document.getElementById('specialTextHint').style.display='none';document.getElementById('editorText').value=getBlockText(block);setFontSizeOptions(bt,parseFloat(block.dataset.fontSize)||defaultSizes[bt]);document.getElementById('editorModal').style.display='flex';setTimeout(()=>document.getElementById('editorText').focus(),80);return;
+ }
+ editingBlock=block; const editType=getBlockType(block); document.getElementById('editText').value=getBlockText(block); setEditFontSizeOptions(editType,parseFloat(block.dataset.fontSize)||12); document.getElementById('editModal').style.display='flex';setTimeout(()=>document.getElementById('editText').focus(),80);
+}
+function closeEdit(){document.getElementById('editModal').style.display='none';document.getElementById('editFontSizeControl').style.display='none';editingBlock=null;}
+function updateEdited(){
+ if(editingBlock && ['heading','subheading','miniheading'].includes(getBlockType(editingBlock))){
+   const type=getBlockType(editingBlock),val=document.getElementById('editorText').value.trim(),size=parseFloat(document.getElementById('fontSizeSelect').value)||defaultSizes[type];
+   if(!val){alert('पहले कुछ लिखें।');return}
+   const align=editingBlock.dataset.align||'center',target=editingBlock.closest('.page-inner'),replacement=makeBlock(type,val,{size,align});editingBlock.replaceWith(replacement);if(!fits(target)){replacement.remove();alert('यह content इस page में fit नहीं हो रहा।');return}saveProjectAuto();closeEditor();editingBlock=null;toast(titles[type]+' update हो गई');return;
+ }
+ if(editingBlock && editingBlock.classList.contains('chapter-layout')){
+   const no=document.getElementById('chapterNo').value.trim();
+   const hi=document.getElementById('chapterHindi').value.trim();
+   const en=document.getElementById('chapterEnglish').value.trim();
+   if(!no||!hi||!en){alert('Chapter No., Hindi Chapter Name और English Chapter Name तीनों भरें।');return}
+   const target=editingBlock.closest('.page-inner');
+   const replacement=makeChapterBlock(no,hi,en);
+   editingBlock.replaceWith(replacement);
+   if(!fits(target)){replacement.remove();alert('यह Chapter Heading इस page में fit नहीं हो रही।');return}
+   saveProjectAuto();closeEditor();editingBlock=null;toast('Chapter Heading update हो गई');return;
+ }
+ if(!editingBlock)return;const val=document.getElementById('editText').value.trim();if(!val){alert('पहले कुछ लिखें।');return}
+ const type=getBlockType(editingBlock);if(!type)return;
+ // केवल Important Box, Quote और अध्याय का संकल्प के लिए edited content को
+ // page limit के अनुसार फिर से flow करें, ताकि बड़ा content कटे नहीं।
+ if(type==='box'||type==='quote'||type==='sankalp'){
+   const targetPage=editingBlock.closest('.page');
+   const cards=[...document.querySelectorAll('.page-card')];
+   const targetIndex=cards.findIndex(c=>c.contains(targetPage));
+   if(targetIndex<0)return;
+   const records=[];
+   for(let i=targetIndex;i<cards.length;i++){
+     const pg=cards[i].querySelector('.page');
+     [...pg.querySelectorAll('.page-inner > .block')].forEach(b=>{
+       records.push(b===editingBlock?{type,val}:{type:getBlockType(b),val:getBlockText(b)});
+     });
+   }
+   cards.slice(targetIndex).forEach(c=>c.remove());
+   currentPage=null;
+   const first=makePage('numbered',false);
+   currentPage=first.querySelector('.page-inner');
+   records.forEach(r=>addContentWithAutoPagination(r.type,r.val));
+   renumber();saveProjectAuto();closeEdit();toast('Box/Quote/Sankalp पूरा content के साथ update हो गया');return;
+ }
+ const target=editingBlock.closest('.page-inner');const editOpts=(type==='specialtext'||type==='points')?{size:parseFloat(document.getElementById('editFontSizeSelect').value)||12}:{};editingBlock.replaceWith(makeBlock(type,val,editOpts));
+ if(!fits(target)){target.lastElementChild.remove();editingBlock=null;alert('यह content इस page में fit नहीं हो रहा। छोटा content डालें या नया page बनाकर जोड़ें।');return}
+ saveProjectAuto();closeEdit();toast('Block update हो गया');
+}
+function deleteEdited(){if(!editingBlock)return;if(!confirm('यह block हटाएँ?'))return;editingBlock.remove();saveProjectAuto();if(['heading','chapter','subheading','miniheading'].includes(editorType))closeEditor();else closeEdit();renumber();toast('Block हट गया');}
+function setMasterMode(edit){document.getElementById('masterAddBtn').style.display=edit?'none':'';document.getElementById('masterUpdateBtn').style.display=edit?'':'none';document.getElementById('masterDeleteBtn').style.display=edit?'':'none';}
+function openMasterText(block=null){
+ ensureEditablePage();masterEditingBlock=block||null;setMasterMode(!!block);document.getElementById('masterModalTitle').textContent=block?'🧠 Master Text Edit करें':'🧠 Master Text लिखें';
+ const vals=block?{text:block.textContent,size:block.dataset.fontSize||12,font:block.dataset.fontFamily||'Noto Sans Devanagari',weight:block.dataset.fontWeight||400,line:block.dataset.lineHeight||1.35,align:block.dataset.align||'left',letter:block.dataset.letterSpacing||0,margin:block.dataset.margin||10}:{text:'',size:12,font:'Noto Sans Devanagari',weight:400,line:1.35,align:'left',letter:0,margin:10};
+ document.getElementById('masterTextInput').value=vals.text;document.getElementById('masterSize').value=vals.size;document.getElementById('masterFont').value=vals.font;document.getElementById('masterWeight').value=vals.weight;document.getElementById('masterLineHeight').value=vals.line;document.getElementById('masterAlign').value=vals.align;document.getElementById('masterLetterSpacing').value=vals.letter;document.getElementById('masterMargin').value=vals.margin;document.getElementById('masterModal').style.display='flex';setTimeout(()=>document.getElementById('masterTextInput').focus(),80);
+}
+function closeMasterText(){document.getElementById('masterModal').style.display='none';masterEditingBlock=null;}
+function applyMasterStyle(b){b.style.fontFamily='"Noto Sans Devanagari", "Nirmala UI", "Mangal", Arial, sans-serif';b.style.fontSize=b.dataset.fontSize+'pt';b.style.fontWeight=b.dataset.fontWeight;b.style.lineHeight=b.dataset.lineHeight+'pt';b.style.textAlign=b.dataset.align;b.style.letterSpacing=b.dataset.letterSpacing+'pt';b.style.marginBottom=b.dataset.margin+'pt';}
+function masterPositionDefault(inner,b){
+ let max=0;[...inner.children].forEach(x=>{if(x===b)return;if(x.classList.contains('mastertext'))return;max=Math.max(max,x.offsetTop+x.offsetHeight+10)});b.style.left='0px';b.style.top=Math.max(0,Math.min(max,inner.clientHeight-b.offsetHeight))+'px';
+}
+function bindMasterDrag(b){
+ b.addEventListener('pointerdown',e=>{e.stopPropagation();if(e.button!==undefined&&e.button!==0)return;const inner=b.closest('.page-inner'),r=inner.getBoundingClientRect(),br=b.getBoundingClientRect();masterDrag={b,inner,startX:e.clientX,startY:e.clientY,left:br.left-r.left,top:br.top-r.top};b.classList.add('master-editing');try{b.setPointerCapture(e.pointerId)}catch(_){}e.preventDefault();},{passive:false});
+ b.addEventListener('pointermove',e=>{if(!masterDrag||masterDrag.b!==b)return;const r=innerRect=masterDrag.inner.getBoundingClientRect();let left=masterDrag.left+e.clientX-masterDrag.startX,top=masterDrag.top+e.clientY-masterDrag.startY;left=Math.max(0,Math.min(masterDrag.inner.clientWidth-b.offsetWidth,left));top=Math.max(0,Math.min(masterDrag.inner.clientHeight-b.offsetHeight,top));b.style.left=left+'px';b.style.top=top+'px';e.preventDefault();},{passive:false});
+ const end=e=>{if(masterDrag&&masterDrag.b===b){masterDrag=null;b.classList.remove('master-editing');saveProjectAuto()}};b.addEventListener('pointerup',end);b.addEventListener('pointercancel',end);b._masterBound=true;
+}
+function makeMasterBlock(text,opts={}){
+ const b=document.createElement('div');b.className='block mastertext';b.textContent=text;b.dataset.fontSize=opts.size||12;b.dataset.fontFamily=opts.font||'Noto Sans Devanagari';b.dataset.fontWeight=opts.weight||400;b.dataset.lineHeight=opts.line||1.35;b.dataset.align=opts.align||'left';b.dataset.letterSpacing=opts.letter||0;b.dataset.margin=opts.margin||10;applyMasterStyle(b);bindMasterDrag(b);return b;
+}
+function masterOptsFromUI(){return {size:parseFloat(document.getElementById('masterSize').value)||12,font:document.getElementById('masterFont').value,weight:parseInt(document.getElementById('masterWeight').value,10)||400,line:parseFloat(document.getElementById('masterLineHeight').value)||1.35,align:document.getElementById('masterAlign').value,letter:parseFloat(document.getElementById('masterLetterSpacing').value)||0,margin:parseFloat(document.getElementById('masterMargin').value)||0};}
+function insertMasterText(){
+ const text=document.getElementById('masterTextInput').value;if(!text.trim()){alert('पहले कुछ लिखें।');return}
+ const opts=masterOptsFromUI(); const b=makeMasterBlock(text,opts);currentPage.appendChild(b);masterPositionDefault(currentPage,b);if(b.offsetTop+b.offsetHeight>currentPage.clientHeight){b.style.top=Math.max(0,currentPage.clientHeight-b.offsetHeight)+'px'}saveProjectAuto();closeMasterText();toast('Master Text page में जोड़ दिया गया');
+}
+function updateMasterText(){
+ if(!masterEditingBlock)return; const text=document.getElementById('masterTextInput').value;if(!text.trim()){alert('पहले कुछ लिखें।');return}
+ const old=masterEditingBlock,opts=masterOptsFromUI(),b=makeMasterBlock(text,opts);b.style.left=old.style.left;b.style.top=old.style.top;old.replaceWith(b);masterEditingBlock=null;closeMasterText();saveProjectAuto();toast('Master Text update हो गया');
+}
+function deleteMasterText(){if(masterEditingBlock&&confirm('यह Master Text block हटाएँ?')){masterEditingBlock.remove();masterEditingBlock=null;closeMasterText();saveProjectAuto();toast('Master Text हट गया');}}
+function deletePage(page){
+ const cards=[...document.querySelectorAll('.page-card')],i=cards.findIndex(c=>c.contains(page));if(i<0)return;
+ if(cards.length===1){if(confirm('यह आखिरी page है। इसे खाली करना है?')){page.querySelector('.page-inner').innerHTML='';currentPage=page.querySelector('.page-inner');saveProjectAuto();renumber();}return;}
+ if(!confirm('क्या यह पूरा page हटाना है?'))return;
+ const next=cards[i+1]||cards[i-1];cards[i].remove();currentPage=(next.querySelector('.page:not(.prelim-page) .page-inner')||next.querySelector('.page-inner'));renumber();saveProjectAuto();toast('यह page हटा दिया गया');
+}
+function clearBook(){if(confirm('पूरी book साफ करनी है?')){book.innerHTML='';currentPage=null;makePage('numbered',false);currentPage=lastNumberedInner();saveProjectAuto();toast('नई खाली book तैयार है');}}
+function indexPages(){return [...document.querySelectorAll('.index-page')];}
+function indexPageExists(){return !!document.querySelector('.index-page');}
+function createIndexPage(withTitle,afterPage){
+ const card=document.createElement('div');card.className='page-card';
+ const p=document.createElement('div');p.className='page prelim-page index-page';p.innerHTML='<div class="page-inner"></div><div class="page-num"></div>';card.appendChild(p);
+ if(afterPage&&afterPage.closest('.page-card'))afterPage.closest('.page-card').after(card);else{const first=firstNumberedCard();if(first)book.insertBefore(card,first);else book.appendChild(card);}
+ const inner=p.querySelector('.page-inner');inner.innerHTML=(withTitle?'<div class="index-title">अनुक्रमणिका</div>':'')+'<div class="index-content"><table class="index-table"><thead><tr><th>अध्याय क्रम संख्या</th><th>अध्ययन सामग्री</th><th>पृष्ठ संख्या</th></tr></thead><tbody></tbody></table></div>';
+ renumber();return p;
+}
+function openIndexManager(){document.getElementById('idxHindi').value='';document.getElementById('idxEnglish').value='';document.getElementById('idxPageNo').value='';document.getElementById('idxTopics').value='';document.getElementById('indexModal').style.display='flex';setTimeout(()=>document.getElementById('idxHindi').focus(),60);}
+function closeIndexManager(){document.getElementById('indexModal').style.display='none';}
+function currentIndexChapterCount(){return book.querySelectorAll('.index-chapter-row[data-index-root="true"]').length;}
+function makeIndexPage(){return createIndexPage(indexPages().length===0,indexPages().length?indexPages()[indexPages().length-1]:null);}
+function topicNodes(topics){return topics.map(x=>{const d=document.createElement('div');d.textContent='■ '+x;return d;});}
+function buildIndexChunk(no,hi,en,pageno,topics,root=false){
+ const tr=document.createElement('tr');tr.className='index-chapter-row';tr.dataset.indexNo=no;tr.dataset.hi=hi;tr.dataset.en=en;tr.dataset.pageNo=pageno;tr.dataset.indexRoot=root?'true':'false';
+ const td1=document.createElement('td');td1.className='idx-no';td1.textContent=root?'अध्याय '+no:'';const td2=document.createElement('td');
+ if(root){const name=document.createElement('div');name.className='index-chapter-name';name.textContent=hi;td2.appendChild(name);const enb=document.createElement('div');enb.className='index-en';enb.textContent='('+en+')';td2.appendChild(enb);const lab=document.createElement('div');lab.className='index-topics-label';lab.textContent='इस अध्याय में आप इन विषयों का अध्ययन करेंगे';td2.appendChild(lab);}
+ const topicsWrap=document.createElement('div');topicsWrap.className='index-topics';topicNodes(topics).forEach(n=>topicsWrap.appendChild(n));td2.appendChild(topicsWrap);const td3=document.createElement('td');td3.className='index-page-no';td3.textContent=root?(pageno||''):'';tr.append(td1,td2,td3);
+ tr.addEventListener('dblclick',e=>{if(!root||!tr.closest('.index-page').classList.contains('locked'))return;if(e.target.closest('.index-page-no')){const v=prompt('पृष्ठ संख्या बदलें:',tr.dataset.pageNo||'');if(v!==null){tr.dataset.pageNo=v;tr.querySelector('.index-page-no').textContent=v;saveProjectAuto();}}else if(e.target.closest('.index-chapter-name')){const v=prompt('अध्याय का हिन्दी नाम बदलें:',tr.dataset.hi||'');if(v!==null){tr.dataset.hi=v;tr.querySelector('.index-chapter-name').textContent=v;saveProjectAuto();}}else if(e.target.closest('.index-en')){const v=prompt('Chapter Name — English बदलें:',tr.dataset.en||'');if(v!==null){tr.dataset.en=v;tr.querySelector('.index-en').textContent='('+v+')';saveProjectAuto();}}});return tr;
+}
+function addIndexChapter(){
+ if(indexPages().some(p=>p.classList.contains('locked'))){alert('अनुक्रमणिका Lock हो चुकी है। नया अध्याय जोड़ने के लिए पहले Complete Index करें।');return;}
+ const hi=document.getElementById('idxHindi').value.trim(),en=document.getElementById('idxEnglish').value.trim(),pg=document.getElementById('idxPageNo').value.trim(),topics=document.getElementById('idxTopics').value.split(/\n+/).map(x=>x.trim()).filter(Boolean);
+ if(!hi||!en||!topics.length){alert('अध्याय का हिन्दी नाम, English नाम और कम से कम एक विषय भरें।');return;}
+ if(currentIndexChapterCount()>=18){alert('इस book के लिए अधिकतम 18 chapters का Index रखा गया है।');return;}
+ let pages=indexPages();if(!pages.length)pages=[createIndexPage(true,null)];const no=currentIndexChapterCount()+1;let remaining=[...topics],first=true;
+ while(remaining.length){let placed=false;for(let i=0;i<pages.length;i++){const inner=pages[i].querySelector('.page-inner'),tbody=inner.querySelector('tbody');if(!tbody)continue;let best=0;for(let k=1;k<=remaining.length;k++){const test=buildIndexChunk(no,hi,en,pg,remaining.slice(0,k),first);tbody.appendChild(test);const ok=fits(inner);test.remove();if(ok)best=k;else break;}if(best>0){tbody.appendChild(buildIndexChunk(no,hi,en,pg,remaining.slice(0,best),first));remaining=remaining.slice(best);placed=true;first=false;break;}}if(!placed){pages.push(makeIndexPage());}}
+ renumber();saveProjectAuto();document.getElementById('idxHindi').value='';document.getElementById('idxEnglish').value='';document.getElementById('idxPageNo').value='';document.getElementById('idxTopics').value='';toast('अध्याय '+no+' Index में जोड़ दिया गया');
+}
+function completeIndex(){if(!indexPages().length||!currentIndexChapterCount()){alert('पहले Index में अध्याय जोड़ें।');return;}indexPages().forEach(p=>p.classList.add('locked'));saveProjectAuto();closeIndexManager();toast('Complete Index तैयार और lock हो गया');}
+let longPressTimer=null,sx=0,sy=0;
+book.addEventListener('pointerdown',e=>{const page=e.target.closest('.page');if(!page)return;sx=e.clientX;sy=e.clientY;clearTimeout(longPressTimer);longPressTimer=setTimeout(()=>{longPressTimer=null;deletePage(page)},900)});
+book.addEventListener('pointermove',e=>{if(Math.abs(e.clientX-sx)>12||Math.abs(e.clientY-sy)>12){clearTimeout(longPressTimer);longPressTimer=null}});
+['pointerup','pointercancel','pointerleave'].forEach(ev=>book.addEventListener(ev,()=>{clearTimeout(longPressTimer);longPressTimer=null}));
+book.addEventListener('contextmenu',e=>{const page=e.target.closest('.page');if(!page)return;e.preventDefault();deletePage(page)});
+book.addEventListener('dblclick',e=>{const b=e.target.closest('.block');if(b)openEdit(b)});
+book.addEventListener('click',e=>{const page=e.target.closest('.page');if(page&&!e.target.closest('.block')&&!e.target.closest('[contenteditable="true"]')){document.querySelectorAll('.page').forEach(p=>p.classList.remove('selected'));page.classList.add('selected')}});
+document.addEventListener('input',e=>{if(e.target.closest('.index-page'))saveProjectAuto()});
+window.addEventListener('click',e=>{if(e.target.id==='editorModal')closeEditor();if(e.target.id==='editModal')closeEdit();if(e.target.id==='videoModal')closeVideo();if(e.target.id==='indexModal')closeIndexManager()});
+function xmlEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');}
+function crc32(buf){let table=window.__crcTable;if(!table){table=[];for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);table[n]=c>>>0}window.__crcTable=table}let c=0xFFFFFFFF;for(const b of buf)c=table[(c^b)&255]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
+function u32(n){return new Uint8Array([n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255]);}
+function u16(n){return new Uint8Array([n&255,(n>>>8)&255]);}
+function concatBytes(arrs){let n=arrs.reduce((s,a)=>s+a.length,0),o=new Uint8Array(n),p=0;for(const a of arrs){o.set(a,p);p+=a.length}return o;}
+function zipStore(files){const te=new TextEncoder(),local=[],central=[];let offset=0;for(const f of files){const name=te.encode(f.name),data=f.data instanceof Uint8Array?f.data:te.encode(f.data),crc=crc32(data);const lh=concatBytes([new Uint8Array([80,75,3,4]),u16(20),u16(0),u16(0),u16(0),u16(0),u32(crc),u32(data.length),u32(data.length),u16(name.length),u16(0),name,data]);local.push(lh);const ch=concatBytes([new Uint8Array([80,75,1,2]),u16(20),u16(20),u16(0),u16(0),u16(0),u16(0),u32(crc),u32(data.length),u32(data.length),u16(name.length),u16(0),u16(0),u16(0),u16(0),u32(0),u32(offset),name]);central.push(ch);offset+=lh.length;}const cd=concatBytes(central),body=concatBytes(local),end=concatBytes([new Uint8Array([80,75,5,6]),u16(0),u16(0),u16(files.length),u16(files.length),u32(cd.length),u32(body.length),u16(0)]);return concatBytes([body,cd,end]);}
+function wP(text,opts={}){const align=opts.align||'left',bold=opts.bold?' <w:b/>':'',parts=String(text).split('\n');return `<w:p><w:pPr><w:jc w:val="${align}"/></w:pPr><w:r>${bold}<w:t xml:space="preserve">${xmlEsc(parts[0]||'')}</w:t></w:r>${parts.slice(1).map(x=>`<w:r><w:br/><w:t xml:space="preserve">${xmlEsc(x)}</w:t></w:r>`).join('')}</w:p>`;}
+function wTable(rows){return '<w:tbl><w:tblPr><w:tblBorders><w:top w:val="single"/><w:left w:val="single"/><w:bottom w:val="single"/><w:right w:val="single"/><w:insideH w:val="single"/><w:insideV w:val="single"/></w:tblBorders></w:tblPr>'+rows.map(r=>'<w:tr>'+r.map(c=>'<w:tc><w:p><w:r><w:t xml:space="preserve">'+xmlEsc(c)+'</w:t></w:r></w:p></w:tc>').join('')+'</w:tr>').join('')+'</w:tbl>';}
+function collectWordParts(){let out=[];document.querySelectorAll('.page').forEach(p=>{if(p.classList.contains('index-page')){const rows=[...p.querySelectorAll('tr')].map(tr=>[...tr.children].map(td=>td.innerText.trim()));if(rows.length)out.push({type:'table',rows});return}p.querySelectorAll('.page-inner > .block').forEach(b=>{if(b.classList.contains('chapter-layout'))out.push({type:'p',text:`अध्याय ${b.dataset.chapterNo||''} — ${b.dataset.chapterHindi||''} (${b.dataset.chapterEnglish||''})`,bold:true});else if(b.classList.contains('video-link'))out.push({type:'p',text:`वीडियो: ${b.dataset.videoUrl||''}`});else if(b.classList.contains('points'))[...b.children].forEach(x=>out.push({type:'p',text:'• '+x.textContent.replace(/^•\s*/,'' )}));else if(b.classList.contains('sankalp')){out.push({type:'p',text:'अध्याय का संकल्प',bold:true});[...b.children].filter(x=>!x.classList.contains('title')).forEach(x=>out.push({type:'p',text:x.textContent}));}else out.push({type:'p',text:b.textContent,align:b.style.textAlign||'left',bold:b.classList.contains('heading')||b.classList.contains('subheading')||b.classList.contains('miniheading')||b.classList.contains('quote')});});});return out;}
+function exportWordManuscript(){try{const parts=collectWordParts(),body=parts.map(x=>x.type==='table'?wTable(x.rows):wP(x.text,{align:x.align,bold:x.bold})).join('');const doc=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${body}<w:sectPr><w:pgSz w:w="7920" w:h="12240"/><w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720"/></w:sectPr></w:body></w:document>`;const files=[{name:'[Content_Types].xml',data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>`},{name:'_rels/.rels',data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`},{name:'word/document.xml',data:doc},{name:'word/_rels/document.xml.rels',data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"></Relationships>`}];const zip=zipStore(files),blob=new Blob([zip],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Mahila_Suraksha_Margdarshika_Manuscript.docx';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1500);toast('Word manuscript .docx तैयार हो गई');}catch(e){console.error(e);alert('Word manuscript बनाते समय समस्या आई।');}}
+// Software startup: always open with a fresh blank numbered page.
+// Saved projects are still available through the explicit Open Project button.
+
+const p=makePage('numbered',false);
+currentPage=p.querySelector('.page-inner');
+hydrateInteractiveBlocks();
+</script>
+<script>
+(function(){
+var __mods={}, __cache={};
+function __define(n,f){__mods[n]=f;}
+function __req(n){if(__cache[n])return __cache[n].exports; var m={exports:{}}; __mods[n](__req,m,m.exports); __cache[n]=m; return m.exports;}
+
+__define('QRMode',function(require,module,exports){
+module.exports = {
+    MODE_NUMBER :       1 << 0,
+    MODE_ALPHA_NUM :    1 << 1,
+    MODE_8BIT_BYTE :    1 << 2,
+    MODE_KANJI :        1 << 3
+};
+
+});
+
+__define('QRErrorCorrectLevel',function(require,module,exports){
+module.exports = {
+	L : 1,
+	M : 0,
+	Q : 3,
+	H : 2
+};
+
+
+});
+
+__define('QRMaskPattern',function(require,module,exports){
+module.exports = {
+	PATTERN000 : 0,
+	PATTERN001 : 1,
+	PATTERN010 : 2,
+	PATTERN011 : 3,
+	PATTERN100 : 4,
+	PATTERN101 : 5,
+	PATTERN110 : 6,
+	PATTERN111 : 7
+};
+
+});
+
+__define('QRMath',function(require,module,exports){
+var QRMath = {
+
+	glog : function(n) {
+	
+		if (n < 1) {
+			throw new Error("glog(" + n + ")");
+		}
+		
+		return QRMath.LOG_TABLE[n];
+	},
+	
+	gexp : function(n) {
+	
+		while (n < 0) {
+			n += 255;
+		}
+	
+		while (n >= 256) {
+			n -= 255;
+		}
+	
+		return QRMath.EXP_TABLE[n];
+	},
+	
+	EXP_TABLE : new Array(256),
+	
+	LOG_TABLE : new Array(256)
+
+};
+	
+for (var i = 0; i < 8; i++) {
+	QRMath.EXP_TABLE[i] = 1 << i;
+}
+for (var i = 8; i < 256; i++) {
+	QRMath.EXP_TABLE[i] = QRMath.EXP_TABLE[i - 4]
+		^ QRMath.EXP_TABLE[i - 5]
+		^ QRMath.EXP_TABLE[i - 6]
+		^ QRMath.EXP_TABLE[i - 8];
+}
+for (var i = 0; i < 255; i++) {
+	QRMath.LOG_TABLE[QRMath.EXP_TABLE[i] ] = i;
+}
+
+module.exports = QRMath;
+
+});
+
+__define('QR8bitByte',function(require,module,exports){
+var QRMode = __req('QRMode');
+
+function QR8bitByte(data) {
+	this.mode = QRMode.MODE_8BIT_BYTE;
+	this.data = data;
+}
+
+QR8bitByte.prototype = {
+
+	getLength : function() {
+		return this.data.length;
+	},
+	
+	write : function(buffer) {
+		for (var i = 0; i < this.data.length; i++) {
+			// not JIS ...
+			buffer.put(this.data.charCodeAt(i), 8);
+		}
+	}
+};
+
+module.exports = QR8bitByte;
+
+});
+
+__define('QRBitBuffer',function(require,module,exports){
+function QRBitBuffer() {
+	this.buffer = [];
+	this.length = 0;
+}
+
+QRBitBuffer.prototype = {
+
+	get : function(index) {
+		var bufIndex = Math.floor(index / 8);
+		return ( (this.buffer[bufIndex] >>> (7 - index % 8) ) & 1) == 1;
+	},
+	
+	put : function(num, length) {
+		for (var i = 0; i < length; i++) {
+			this.putBit( ( (num >>> (length - i - 1) ) & 1) == 1);
+		}
+	},
+	
+	getLengthInBits : function() {
+		return this.length;
+	},
+	
+	putBit : function(bit) {
+	
+		var bufIndex = Math.floor(this.length / 8);
+		if (this.buffer.length <= bufIndex) {
+			this.buffer.push(0);
+		}
+	
+		if (bit) {
+			this.buffer[bufIndex] |= (0x80 >>> (this.length % 8) );
+		}
+	
+		this.length++;
+	}
+};
+
+module.exports = QRBitBuffer;
+
+});
+
+__define('QRPolynomial',function(require,module,exports){
+var QRMath = __req('QRMath');
+
+function QRPolynomial(num, shift) {
+	if (num.length === undefined) {
+		throw new Error(num.length + "/" + shift);
+	}
+
+	var offset = 0;
+
+	while (offset < num.length && num[offset] === 0) {
+		offset++;
+	}
+
+	this.num = new Array(num.length - offset + shift);
+	for (var i = 0; i < num.length - offset; i++) {
+		this.num[i] = num[i + offset];
+	}
+}
+
+QRPolynomial.prototype = {
+
+	get : function(index) {
+		return this.num[index];
+	},
+	
+	getLength : function() {
+		return this.num.length;
+	},
+	
+	multiply : function(e) {
+	
+		var num = new Array(this.getLength() + e.getLength() - 1);
+	
+		for (var i = 0; i < this.getLength(); i++) {
+			for (var j = 0; j < e.getLength(); j++) {
+				num[i + j] ^= QRMath.gexp(QRMath.glog(this.get(i) ) + QRMath.glog(e.get(j) ) );
+			}
+		}
+	
+		return new QRPolynomial(num, 0);
+	},
+	
+	mod : function(e) {
+	
+		if (this.getLength() - e.getLength() < 0) {
+			return this;
+		}
+	
+		var ratio = QRMath.glog(this.get(0) ) - QRMath.glog(e.get(0) );
+	
+		var num = new Array(this.getLength() );
+		
+		for (var i = 0; i < this.getLength(); i++) {
+			num[i] = this.get(i);
+		}
+		
+		for (var x = 0; x < e.getLength(); x++) {
+			num[x] ^= QRMath.gexp(QRMath.glog(e.get(x) ) + ratio);
+		}
+	
+		// recursive call
+		return new QRPolynomial(num, 0).mod(e);
+	}
+};
+
+module.exports = QRPolynomial;
+
+});
+
+__define('QRRSBlock',function(require,module,exports){
+var QRErrorCorrectLevel = __req('QRErrorCorrectLevel');
+
+function QRRSBlock(totalCount, dataCount) {
+	this.totalCount = totalCount;
+	this.dataCount  = dataCount;
+}
+
+QRRSBlock.RS_BLOCK_TABLE = [
+
+	// L
+	// M
+	// Q
+	// H
+
+	// 1
+	[1, 26, 19],
+	[1, 26, 16],
+	[1, 26, 13],
+	[1, 26, 9],
+	
+	// 2
+	[1, 44, 34],
+	[1, 44, 28],
+	[1, 44, 22],
+	[1, 44, 16],
+
+	// 3
+	[1, 70, 55],
+	[1, 70, 44],
+	[2, 35, 17],
+	[2, 35, 13],
+
+	// 4		
+	[1, 100, 80],
+	[2, 50, 32],
+	[2, 50, 24],
+	[4, 25, 9],
+	
+	// 5
+	[1, 134, 108],
+	[2, 67, 43],
+	[2, 33, 15, 2, 34, 16],
+	[2, 33, 11, 2, 34, 12],
+	
+	// 6
+	[2, 86, 68],
+	[4, 43, 27],
+	[4, 43, 19],
+	[4, 43, 15],
+	
+	// 7		
+	[2, 98, 78],
+	[4, 49, 31],
+	[2, 32, 14, 4, 33, 15],
+	[4, 39, 13, 1, 40, 14],
+	
+	// 8
+	[2, 121, 97],
+	[2, 60, 38, 2, 61, 39],
+	[4, 40, 18, 2, 41, 19],
+	[4, 40, 14, 2, 41, 15],
+	
+	// 9
+	[2, 146, 116],
+	[3, 58, 36, 2, 59, 37],
+	[4, 36, 16, 4, 37, 17],
+	[4, 36, 12, 4, 37, 13],
+	
+	// 10		
+	[2, 86, 68, 2, 87, 69],
+	[4, 69, 43, 1, 70, 44],
+	[6, 43, 19, 2, 44, 20],
+	[6, 43, 15, 2, 44, 16],
+
+	// 11
+	[4, 101, 81],
+	[1, 80, 50, 4, 81, 51],
+	[4, 50, 22, 4, 51, 23],
+	[3, 36, 12, 8, 37, 13],
+
+	// 12
+	[2, 116, 92, 2, 117, 93],
+	[6, 58, 36, 2, 59, 37],
+	[4, 46, 20, 6, 47, 21],
+	[7, 42, 14, 4, 43, 15],
+
+	// 13
+	[4, 133, 107],
+	[8, 59, 37, 1, 60, 38],
+	[8, 44, 20, 4, 45, 21],
+	[12, 33, 11, 4, 34, 12],
+
+	// 14
+	[3, 145, 115, 1, 146, 116],
+	[4, 64, 40, 5, 65, 41],
+	[11, 36, 16, 5, 37, 17],
+	[11, 36, 12, 5, 37, 13],
+
+	// 15
+	[5, 109, 87, 1, 110, 88],
+	[5, 65, 41, 5, 66, 42],
+	[5, 54, 24, 7, 55, 25],
+	[11, 36, 12],
+
+	// 16
+	[5, 122, 98, 1, 123, 99],
+	[7, 73, 45, 3, 74, 46],
+	[15, 43, 19, 2, 44, 20],
+	[3, 45, 15, 13, 46, 16],
+
+	// 17
+	[1, 135, 107, 5, 136, 108],
+	[10, 74, 46, 1, 75, 47],
+	[1, 50, 22, 15, 51, 23],
+	[2, 42, 14, 17, 43, 15],
+
+	// 18
+	[5, 150, 120, 1, 151, 121],
+	[9, 69, 43, 4, 70, 44],
+	[17, 50, 22, 1, 51, 23],
+	[2, 42, 14, 19, 43, 15],
+
+	// 19
+	[3, 141, 113, 4, 142, 114],
+	[3, 70, 44, 11, 71, 45],
+	[17, 47, 21, 4, 48, 22],
+	[9, 39, 13, 16, 40, 14],
+
+	// 20
+	[3, 135, 107, 5, 136, 108],
+	[3, 67, 41, 13, 68, 42],
+	[15, 54, 24, 5, 55, 25],
+	[15, 43, 15, 10, 44, 16],
+
+	// 21
+	[4, 144, 116, 4, 145, 117],
+	[17, 68, 42],
+	[17, 50, 22, 6, 51, 23],
+	[19, 46, 16, 6, 47, 17],
+
+	// 22
+	[2, 139, 111, 7, 140, 112],
+	[17, 74, 46],
+	[7, 54, 24, 16, 55, 25],
+	[34, 37, 13],
+
+	// 23
+	[4, 151, 121, 5, 152, 122],
+	[4, 75, 47, 14, 76, 48],
+	[11, 54, 24, 14, 55, 25],
+	[16, 45, 15, 14, 46, 16],
+
+	// 24
+	[6, 147, 117, 4, 148, 118],
+	[6, 73, 45, 14, 74, 46],
+	[11, 54, 24, 16, 55, 25],
+	[30, 46, 16, 2, 47, 17],
+
+	// 25
+	[8, 132, 106, 4, 133, 107],
+	[8, 75, 47, 13, 76, 48],
+	[7, 54, 24, 22, 55, 25],
+	[22, 45, 15, 13, 46, 16],
+
+	// 26
+	[10, 142, 114, 2, 143, 115],
+	[19, 74, 46, 4, 75, 47],
+	[28, 50, 22, 6, 51, 23],
+	[33, 46, 16, 4, 47, 17],
+
+	// 27
+	[8, 152, 122, 4, 153, 123],
+	[22, 73, 45, 3, 74, 46],
+	[8, 53, 23, 26, 54, 24],
+	[12, 45, 15, 28, 46, 16],
+
+	// 28
+	[3, 147, 117, 10, 148, 118],
+	[3, 73, 45, 23, 74, 46],
+	[4, 54, 24, 31, 55, 25],
+	[11, 45, 15, 31, 46, 16],
+
+	// 29
+	[7, 146, 116, 7, 147, 117],
+	[21, 73, 45, 7, 74, 46],
+	[1, 53, 23, 37, 54, 24],
+	[19, 45, 15, 26, 46, 16],
+
+	// 30
+	[5, 145, 115, 10, 146, 116],
+	[19, 75, 47, 10, 76, 48],
+	[15, 54, 24, 25, 55, 25],
+	[23, 45, 15, 25, 46, 16],
+
+	// 31
+	[13, 145, 115, 3, 146, 116],
+	[2, 74, 46, 29, 75, 47],
+	[42, 54, 24, 1, 55, 25],
+	[23, 45, 15, 28, 46, 16],
+
+	// 32
+	[17, 145, 115],
+	[10, 74, 46, 23, 75, 47],
+	[10, 54, 24, 35, 55, 25],
+	[19, 45, 15, 35, 46, 16],
+
+	// 33
+	[17, 145, 115, 1, 146, 116],
+	[14, 74, 46, 21, 75, 47],
+	[29, 54, 24, 19, 55, 25],
+	[11, 45, 15, 46, 46, 16],
+
+	// 34
+	[13, 145, 115, 6, 146, 116],
+	[14, 74, 46, 23, 75, 47],
+	[44, 54, 24, 7, 55, 25],
+	[59, 46, 16, 1, 47, 17],
+
+	// 35
+	[12, 151, 121, 7, 152, 122],
+	[12, 75, 47, 26, 76, 48],
+	[39, 54, 24, 14, 55, 25],
+	[22, 45, 15, 41, 46, 16],
+
+	// 36
+	[6, 151, 121, 14, 152, 122],
+	[6, 75, 47, 34, 76, 48],
+	[46, 54, 24, 10, 55, 25],
+	[2, 45, 15, 64, 46, 16],
+
+	// 37
+	[17, 152, 122, 4, 153, 123],
+	[29, 74, 46, 14, 75, 47],
+	[49, 54, 24, 10, 55, 25],
+	[24, 45, 15, 46, 46, 16],
+
+	// 38
+	[4, 152, 122, 18, 153, 123],
+	[13, 74, 46, 32, 75, 47],
+	[48, 54, 24, 14, 55, 25],
+	[42, 45, 15, 32, 46, 16],
+
+	// 39
+	[20, 147, 117, 4, 148, 118],
+	[40, 75, 47, 7, 76, 48],
+	[43, 54, 24, 22, 55, 25],
+	[10, 45, 15, 67, 46, 16],
+
+	// 40
+	[19, 148, 118, 6, 149, 119],
+	[18, 75, 47, 31, 76, 48],
+	[34, 54, 24, 34, 55, 25],
+	[20, 45, 15, 61, 46, 16]
+];
+
+QRRSBlock.getRSBlocks = function(typeNumber, errorCorrectLevel) {
+	
+	var rsBlock = QRRSBlock.getRsBlockTable(typeNumber, errorCorrectLevel);
+	
+	if (rsBlock === undefined) {
+		throw new Error("bad rs block @ typeNumber:" + typeNumber + "/errorCorrectLevel:" + errorCorrectLevel);
+	}
+
+	var length = rsBlock.length / 3;
+	
+	var list = [];
+	
+	for (var i = 0; i < length; i++) {
+
+		var count = rsBlock[i * 3 + 0];
+		var totalCount = rsBlock[i * 3 + 1];
+		var dataCount  = rsBlock[i * 3 + 2];
+
+		for (var j = 0; j < count; j++) {
+			list.push(new QRRSBlock(totalCount, dataCount) );	
+		}
+	}
+	
+	return list;
+};
+
+QRRSBlock.getRsBlockTable = function(typeNumber, errorCorrectLevel) {
+
+	switch(errorCorrectLevel) {
+	case QRErrorCorrectLevel.L :
+		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 0];
+	case QRErrorCorrectLevel.M :
+		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 1];
+	case QRErrorCorrectLevel.Q :
+		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 2];
+	case QRErrorCorrectLevel.H :
+		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 3];
+	default :
+		return undefined;
+	}
+};
+
+module.exports = QRRSBlock;
+
+});
+
+__define('QRUtil',function(require,module,exports){
+var QRMode = __req('QRMode');
+var QRPolynomial = __req('QRPolynomial');
+var QRMath = __req('QRMath');
+var QRMaskPattern = __req('QRMaskPattern');
+
+var QRUtil = {
+
+    PATTERN_POSITION_TABLE : [
+        [],
+        [6, 18],
+        [6, 22],
+        [6, 26],
+        [6, 30],
+        [6, 34],
+        [6, 22, 38],
+        [6, 24, 42],
+        [6, 26, 46],
+        [6, 28, 50],
+        [6, 30, 54],        
+        [6, 32, 58],
+        [6, 34, 62],
+        [6, 26, 46, 66],
+        [6, 26, 48, 70],
+        [6, 26, 50, 74],
+        [6, 30, 54, 78],
+        [6, 30, 56, 82],
+        [6, 30, 58, 86],
+        [6, 34, 62, 90],
+        [6, 28, 50, 72, 94],
+        [6, 26, 50, 74, 98],
+        [6, 30, 54, 78, 102],
+        [6, 28, 54, 80, 106],
+        [6, 32, 58, 84, 110],
+        [6, 30, 58, 86, 114],
+        [6, 34, 62, 90, 118],
+        [6, 26, 50, 74, 98, 122],
+        [6, 30, 54, 78, 102, 126],
+        [6, 26, 52, 78, 104, 130],
+        [6, 30, 56, 82, 108, 134],
+        [6, 34, 60, 86, 112, 138],
+        [6, 30, 58, 86, 114, 142],
+        [6, 34, 62, 90, 118, 146],
+        [6, 30, 54, 78, 102, 126, 150],
+        [6, 24, 50, 76, 102, 128, 154],
+        [6, 28, 54, 80, 106, 132, 158],
+        [6, 32, 58, 84, 110, 136, 162],
+        [6, 26, 54, 82, 110, 138, 166],
+        [6, 30, 58, 86, 114, 142, 170]
+    ],
+
+    G15 : (1 << 10) | (1 << 8) | (1 << 5) | (1 << 4) | (1 << 2) | (1 << 1) | (1 << 0),
+    G18 : (1 << 12) | (1 << 11) | (1 << 10) | (1 << 9) | (1 << 8) | (1 << 5) | (1 << 2) | (1 << 0),
+    G15_MASK : (1 << 14) | (1 << 12) | (1 << 10)    | (1 << 4) | (1 << 1),
+
+    getBCHTypeInfo : function(data) {
+        var d = data << 10;
+        while (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G15) >= 0) {
+            d ^= (QRUtil.G15 << (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G15) ) );    
+        }
+        return ( (data << 10) | d) ^ QRUtil.G15_MASK;
+    },
+
+    getBCHTypeNumber : function(data) {
+        var d = data << 12;
+        while (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G18) >= 0) {
+            d ^= (QRUtil.G18 << (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G18) ) );    
+        }
+        return (data << 12) | d;
+    },
+
+    getBCHDigit : function(data) {
+
+        var digit = 0;
+
+        while (data !== 0) {
+            digit++;
+            data >>>= 1;
+        }
+
+        return digit;
+    },
+
+    getPatternPosition : function(typeNumber) {
+        return QRUtil.PATTERN_POSITION_TABLE[typeNumber - 1];
+    },
+
+    getMask : function(maskPattern, i, j) {
+        
+        switch (maskPattern) {
+            
+        case QRMaskPattern.PATTERN000 : return (i + j) % 2 === 0;
+        case QRMaskPattern.PATTERN001 : return i % 2 === 0;
+        case QRMaskPattern.PATTERN010 : return j % 3 === 0;
+        case QRMaskPattern.PATTERN011 : return (i + j) % 3 === 0;
+        case QRMaskPattern.PATTERN100 : return (Math.floor(i / 2) + Math.floor(j / 3) ) % 2 === 0;
+        case QRMaskPattern.PATTERN101 : return (i * j) % 2 + (i * j) % 3 === 0;
+        case QRMaskPattern.PATTERN110 : return ( (i * j) % 2 + (i * j) % 3) % 2 === 0;
+        case QRMaskPattern.PATTERN111 : return ( (i * j) % 3 + (i + j) % 2) % 2 === 0;
+
+        default :
+            throw new Error("bad maskPattern:" + maskPattern);
+        }
+    },
+
+    getErrorCorrectPolynomial : function(errorCorrectLength) {
+
+        var a = new QRPolynomial([1], 0);
+
+        for (var i = 0; i < errorCorrectLength; i++) {
+            a = a.multiply(new QRPolynomial([1, QRMath.gexp(i)], 0) );
+        }
+
+        return a;
+    },
+
+    getLengthInBits : function(mode, type) {
+
+        if (1 <= type && type < 10) {
+
+            // 1 - 9
+
+            switch(mode) {
+            case QRMode.MODE_NUMBER     : return 10;
+            case QRMode.MODE_ALPHA_NUM  : return 9;
+            case QRMode.MODE_8BIT_BYTE  : return 8;
+            case QRMode.MODE_KANJI      : return 8;
+            default :
+                throw new Error("mode:" + mode);
+            }
+
+        } else if (type < 27) {
+
+            // 10 - 26
+
+            switch(mode) {
+            case QRMode.MODE_NUMBER     : return 12;
+            case QRMode.MODE_ALPHA_NUM  : return 11;
+            case QRMode.MODE_8BIT_BYTE  : return 16;
+            case QRMode.MODE_KANJI      : return 10;
+            default :
+                throw new Error("mode:" + mode);
+            }
+
+        } else if (type < 41) {
+
+            // 27 - 40
+
+            switch(mode) {
+            case QRMode.MODE_NUMBER     : return 14;
+            case QRMode.MODE_ALPHA_NUM  : return 13;
+            case QRMode.MODE_8BIT_BYTE  : return 16;
+            case QRMode.MODE_KANJI      : return 12;
+            default :
+                throw new Error("mode:" + mode);
+            }
+
+        } else {
+            throw new Error("type:" + type);
+        }
+    },
+
+    getLostPoint : function(qrCode) {
+        
+        var moduleCount = qrCode.getModuleCount();
+        var lostPoint = 0;
+        var row = 0; 
+        var col = 0;
+
+        
+        // LEVEL1
+        
+        for (row = 0; row < moduleCount; row++) {
+
+            for (col = 0; col < moduleCount; col++) {
+
+                var sameCount = 0;
+                var dark = qrCode.isDark(row, col);
+
+                for (var r = -1; r <= 1; r++) {
+
+                    if (row + r < 0 || moduleCount <= row + r) {
+                        continue;
+                    }
+
+                    for (var c = -1; c <= 1; c++) {
+
+                        if (col + c < 0 || moduleCount <= col + c) {
+                            continue;
+                        }
+
+                        if (r === 0 && c === 0) {
+                            continue;
+                        }
+
+                        if (dark === qrCode.isDark(row + r, col + c) ) {
+                            sameCount++;
+                        }
+                    }
+                }
+
+                if (sameCount > 5) {
+                    lostPoint += (3 + sameCount - 5);
+                }
+            }
+        }
+
+        // LEVEL2
+
+        for (row = 0; row < moduleCount - 1; row++) {
+            for (col = 0; col < moduleCount - 1; col++) {
+                var count = 0;
+                if (qrCode.isDark(row,     col    ) ) count++;
+                if (qrCode.isDark(row + 1, col    ) ) count++;
+                if (qrCode.isDark(row,     col + 1) ) count++;
+                if (qrCode.isDark(row + 1, col + 1) ) count++;
+                if (count === 0 || count === 4) {
+                    lostPoint += 3;
+                }
+            }
+        }
+
+        // LEVEL3
+
+        for (row = 0; row < moduleCount; row++) {
+            for (col = 0; col < moduleCount - 6; col++) {
+                if (qrCode.isDark(row, col) && 
+                        !qrCode.isDark(row, col + 1) && 
+                         qrCode.isDark(row, col + 2) && 
+                         qrCode.isDark(row, col + 3) && 
+                         qrCode.isDark(row, col + 4) && 
+                        !qrCode.isDark(row, col + 5) && 
+                         qrCode.isDark(row, col + 6) ) {
+                    lostPoint += 40;
+                }
+            }
+        }
+
+        for (col = 0; col < moduleCount; col++) {
+            for (row = 0; row < moduleCount - 6; row++) {
+                if (qrCode.isDark(row, col) &&
+                        !qrCode.isDark(row + 1, col) &&
+                         qrCode.isDark(row + 2, col) &&
+                         qrCode.isDark(row + 3, col) &&
+                         qrCode.isDark(row + 4, col) &&
+                        !qrCode.isDark(row + 5, col) &&
+                         qrCode.isDark(row + 6, col) ) {
+                    lostPoint += 40;
+                }
+            }
+        }
+
+        // LEVEL4
+        
+        var darkCount = 0;
+
+        for (col = 0; col < moduleCount; col++) {
+            for (row = 0; row < moduleCount; row++) {
+                if (qrCode.isDark(row, col) ) {
+                    darkCount++;
+                }
+            }
+        }
+        
+        var ratio = Math.abs(100 * darkCount / moduleCount / moduleCount - 50) / 5;
+        lostPoint += ratio * 10;
+
+        return lostPoint;       
+    }
+
+};
+
+module.exports = QRUtil;
+
+});
+
+__define('index',function(require,module,exports){
+//---------------------------------------------------------------------
+// QRCode for JavaScript
+//
+// Copyright (c) 2009 Kazuhiko Arase
+//
+// URL: http://www.d-project.com/
+//
+// Licensed under the MIT license:
+//   http://www.opensource.org/licenses/mit-license.php
+//
+// The word "QR Code" is registered trademark of 
+// DENSO WAVE INCORPORATED
+//   http://www.denso-wave.com/qrcode/faqpatent-e.html
+//
+//---------------------------------------------------------------------
+// Modified to work in node for this project (and some refactoring)
+//---------------------------------------------------------------------
+
+var QR8bitByte = __req('QR8bitByte');
+var QRUtil = __req('QRUtil');
+var QRPolynomial = __req('QRPolynomial');
+var QRRSBlock = __req('QRRSBlock');
+var QRBitBuffer = __req('QRBitBuffer');
+
+function QRCode(typeNumber, errorCorrectLevel) {
+	this.typeNumber = typeNumber;
+	this.errorCorrectLevel = errorCorrectLevel;
+	this.modules = null;
+	this.moduleCount = 0;
+	this.dataCache = null;
+	this.dataList = [];
+}
+
+QRCode.prototype = {
+	
+	addData : function(data) {
+		var newData = new QR8bitByte(data);
+		this.dataList.push(newData);
+		this.dataCache = null;
+	},
+	
+	isDark : function(row, col) {
+		if (row < 0 || this.moduleCount <= row || col < 0 || this.moduleCount <= col) {
+			throw new Error(row + "," + col);
+		}
+		return this.modules[row][col];
+	},
+
+	getModuleCount : function() {
+		return this.moduleCount;
+	},
+	
+	make : function() {
+		// Calculate automatically typeNumber if provided is < 1
+		if (this.typeNumber < 1 ){
+			var typeNumber = 1;
+			for (typeNumber = 1; typeNumber < 40; typeNumber++) {
+				var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, this.errorCorrectLevel);
+
+				var buffer = new QRBitBuffer();
+				var totalDataCount = 0;
+				for (var i = 0; i < rsBlocks.length; i++) {
+					totalDataCount += rsBlocks[i].dataCount;
+				}
+
+				for (var x = 0; x < this.dataList.length; x++) {
+					var data = this.dataList[x];
+					buffer.put(data.mode, 4);
+					buffer.put(data.getLength(), QRUtil.getLengthInBits(data.mode, typeNumber) );
+					data.write(buffer);
+				}
+				if (buffer.getLengthInBits() <= totalDataCount * 8)
+					break;
+			}
+			this.typeNumber = typeNumber;
+		}
+		this.makeImpl(false, this.getBestMaskPattern() );
+	},
+	
+	makeImpl : function(test, maskPattern) {
+		
+		this.moduleCount = this.typeNumber * 4 + 17;
+		this.modules = new Array(this.moduleCount);
+		
+		for (var row = 0; row < this.moduleCount; row++) {
+			
+			this.modules[row] = new Array(this.moduleCount);
+			
+			for (var col = 0; col < this.moduleCount; col++) {
+				this.modules[row][col] = null;//(col + row) % 3;
+			}
+		}
+	
+		this.setupPositionProbePattern(0, 0);
+		this.setupPositionProbePattern(this.moduleCount - 7, 0);
+		this.setupPositionProbePattern(0, this.moduleCount - 7);
+		this.setupPositionAdjustPattern();
+		this.setupTimingPattern();
+		this.setupTypeInfo(test, maskPattern);
+		
+		if (this.typeNumber >= 7) {
+			this.setupTypeNumber(test);
+		}
+	
+		if (this.dataCache === null) {
+			this.dataCache = QRCode.createData(this.typeNumber, this.errorCorrectLevel, this.dataList);
+		}
+	
+		this.mapData(this.dataCache, maskPattern);
+	},
+
+	setupPositionProbePattern : function(row, col)  {
+		
+		for (var r = -1; r <= 7; r++) {
+			
+			if (row + r <= -1 || this.moduleCount <= row + r) continue;
+			
+			for (var c = -1; c <= 7; c++) {
+				
+				if (col + c <= -1 || this.moduleCount <= col + c) continue;
+				
+				if ( (0 <= r && r <= 6 && (c === 0 || c === 6) ) || 
+                     (0 <= c && c <= 6 && (r === 0 || r === 6) ) || 
+                     (2 <= r && r <= 4 && 2 <= c && c <= 4) ) {
+					this.modules[row + r][col + c] = true;
+				} else {
+					this.modules[row + r][col + c] = false;
+				}
+			}		
+		}		
+	},
+	
+	getBestMaskPattern : function() {
+	
+		var minLostPoint = 0;
+		var pattern = 0;
+	
+		for (var i = 0; i < 8; i++) {
+			
+			this.makeImpl(true, i);
+	
+			var lostPoint = QRUtil.getLostPoint(this);
+	
+			if (i === 0 || minLostPoint >  lostPoint) {
+				minLostPoint = lostPoint;
+				pattern = i;
+			}
+		}
+	
+		return pattern;
+	},
+	
+	createMovieClip : function(target_mc, instance_name, depth) {
+	
+		var qr_mc = target_mc.createEmptyMovieClip(instance_name, depth);
+		var cs = 1;
+	
+		this.make();
+
+		for (var row = 0; row < this.modules.length; row++) {
+			
+			var y = row * cs;
+			
+			for (var col = 0; col < this.modules[row].length; col++) {
+	
+				var x = col * cs;
+				var dark = this.modules[row][col];
+			
+				if (dark) {
+					qr_mc.beginFill(0, 100);
+					qr_mc.moveTo(x, y);
+					qr_mc.lineTo(x + cs, y);
+					qr_mc.lineTo(x + cs, y + cs);
+					qr_mc.lineTo(x, y + cs);
+					qr_mc.endFill();
+				}
+			}
+		}
+		
+		return qr_mc;
+	},
+
+	setupTimingPattern : function() {
+		
+		for (var r = 8; r < this.moduleCount - 8; r++) {
+			if (this.modules[r][6] !== null) {
+				continue;
+			}
+			this.modules[r][6] = (r % 2 === 0);
+		}
+	
+		for (var c = 8; c < this.moduleCount - 8; c++) {
+			if (this.modules[6][c] !== null) {
+				continue;
+			}
+			this.modules[6][c] = (c % 2 === 0);
+		}
+	},
+	
+	setupPositionAdjustPattern : function() {
+	
+		var pos = QRUtil.getPatternPosition(this.typeNumber);
+		
+		for (var i = 0; i < pos.length; i++) {
+		
+			for (var j = 0; j < pos.length; j++) {
+			
+				var row = pos[i];
+				var col = pos[j];
+				
+				if (this.modules[row][col] !== null) {
+					continue;
+				}
+				
+				for (var r = -2; r <= 2; r++) {
+				
+					for (var c = -2; c <= 2; c++) {
+					
+						if (Math.abs(r) === 2 || 
+                            Math.abs(c) === 2 ||
+                            (r === 0 && c === 0) ) {
+							this.modules[row + r][col + c] = true;
+						} else {
+							this.modules[row + r][col + c] = false;
+						}
+					}
+				}
+			}
+		}
+	},
+	
+	setupTypeNumber : function(test) {
+	
+		var bits = QRUtil.getBCHTypeNumber(this.typeNumber);
+        var mod;
+	
+		for (var i = 0; i < 18; i++) {
+			mod = (!test && ( (bits >> i) & 1) === 1);
+			this.modules[Math.floor(i / 3)][i % 3 + this.moduleCount - 8 - 3] = mod;
+		}
+	
+		for (var x = 0; x < 18; x++) {
+			mod = (!test && ( (bits >> x) & 1) === 1);
+			this.modules[x % 3 + this.moduleCount - 8 - 3][Math.floor(x / 3)] = mod;
+		}
+	},
+	
+	setupTypeInfo : function(test, maskPattern) {
+	
+		var data = (this.errorCorrectLevel << 3) | maskPattern;
+		var bits = QRUtil.getBCHTypeInfo(data);
+        var mod;
+	
+		// vertical		
+		for (var v = 0; v < 15; v++) {
+	
+			mod = (!test && ( (bits >> v) & 1) === 1);
+	
+			if (v < 6) {
+				this.modules[v][8] = mod;
+			} else if (v < 8) {
+				this.modules[v + 1][8] = mod;
+			} else {
+				this.modules[this.moduleCount - 15 + v][8] = mod;
+			}
+		}
+	
+		// horizontal
+		for (var h = 0; h < 15; h++) {
+	
+			mod = (!test && ( (bits >> h) & 1) === 1);
+			
+			if (h < 8) {
+				this.modules[8][this.moduleCount - h - 1] = mod;
+			} else if (h < 9) {
+				this.modules[8][15 - h - 1 + 1] = mod;
+			} else {
+				this.modules[8][15 - h - 1] = mod;
+			}
+		}
+	
+		// fixed module
+		this.modules[this.moduleCount - 8][8] = (!test);
+	
+	},
+	
+	mapData : function(data, maskPattern) {
+		
+		var inc = -1;
+		var row = this.moduleCount - 1;
+		var bitIndex = 7;
+		var byteIndex = 0;
+		
+		for (var col = this.moduleCount - 1; col > 0; col -= 2) {
+	
+			if (col === 6) col--;
+	
+			while (true) {
+	
+				for (var c = 0; c < 2; c++) {
+					
+					if (this.modules[row][col - c] === null) {
+						
+						var dark = false;
+	
+						if (byteIndex < data.length) {
+							dark = ( ( (data[byteIndex] >>> bitIndex) & 1) === 1);
+						}
+	
+						var mask = QRUtil.getMask(maskPattern, row, col - c);
+	
+						if (mask) {
+							dark = !dark;
+						}
+						
+						this.modules[row][col - c] = dark;
+						bitIndex--;
+	
+						if (bitIndex === -1) {
+							byteIndex++;
+							bitIndex = 7;
+						}
+					}
+				}
+								
+				row += inc;
+	
+				if (row < 0 || this.moduleCount <= row) {
+					row -= inc;
+					inc = -inc;
+					break;
+				}
+			}
+		}
+		
+	}
+
+};
+
+QRCode.PAD0 = 0xEC;
+QRCode.PAD1 = 0x11;
+
+QRCode.createData = function(typeNumber, errorCorrectLevel, dataList) {
+	
+	var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, errorCorrectLevel);
+	
+	var buffer = new QRBitBuffer();
+	
+	for (var i = 0; i < dataList.length; i++) {
+		var data = dataList[i];
+		buffer.put(data.mode, 4);
+		buffer.put(data.getLength(), QRUtil.getLengthInBits(data.mode, typeNumber) );
+		data.write(buffer);
+	}
+
+	// calc num max data.
+	var totalDataCount = 0;
+	for (var x = 0; x < rsBlocks.length; x++) {
+		totalDataCount += rsBlocks[x].dataCount;
+	}
+
+	if (buffer.getLengthInBits() > totalDataCount * 8) {
+		throw new Error("code length overflow. (" + 
+            buffer.getLengthInBits() + 
+            ">" +  
+            totalDataCount * 8 + 
+            ")");
+	}
+
+	// end code
+	if (buffer.getLengthInBits() + 4 <= totalDataCount * 8) {
+		buffer.put(0, 4);
+	}
+
+	// padding
+	while (buffer.getLengthInBits() % 8 !== 0) {
+		buffer.putBit(false);
+	}
+
+	// padding
+	while (true) {
+		
+		if (buffer.getLengthInBits() >= totalDataCount * 8) {
+			break;
+		}
+		buffer.put(QRCode.PAD0, 8);
+		
+		if (buffer.getLengthInBits() >= totalDataCount * 8) {
+			break;
+		}
+		buffer.put(QRCode.PAD1, 8);
+	}
+
+	return QRCode.createBytes(buffer, rsBlocks);
+};
+
+QRCode.createBytes = function(buffer, rsBlocks) {
+
+	var offset = 0;
+	
+	var maxDcCount = 0;
+	var maxEcCount = 0;
+	
+	var dcdata = new Array(rsBlocks.length);
+	var ecdata = new Array(rsBlocks.length);
+	
+	for (var r = 0; r < rsBlocks.length; r++) {
+
+		var dcCount = rsBlocks[r].dataCount;
+		var ecCount = rsBlocks[r].totalCount - dcCount;
+
+		maxDcCount = Math.max(maxDcCount, dcCount);
+		maxEcCount = Math.max(maxEcCount, ecCount);
+		
+		dcdata[r] = new Array(dcCount);
+		
+		for (var i = 0; i < dcdata[r].length; i++) {
+			dcdata[r][i] = 0xff & buffer.buffer[i + offset];
+		}
+		offset += dcCount;
+		
+		var rsPoly = QRUtil.getErrorCorrectPolynomial(ecCount);
+		var rawPoly = new QRPolynomial(dcdata[r], rsPoly.getLength() - 1);
+
+		var modPoly = rawPoly.mod(rsPoly);
+		ecdata[r] = new Array(rsPoly.getLength() - 1);
+		for (var x = 0; x < ecdata[r].length; x++) {
+            var modIndex = x + modPoly.getLength() - ecdata[r].length;
+			ecdata[r][x] = (modIndex >= 0)? modPoly.get(modIndex) : 0;
+		}
+
+	}
+	
+	var totalCodeCount = 0;
+	for (var y = 0; y < rsBlocks.length; y++) {
+		totalCodeCount += rsBlocks[y].totalCount;
+	}
+
+	var data = new Array(totalCodeCount);
+	var index = 0;
+
+	for (var z = 0; z < maxDcCount; z++) {
+		for (var s = 0; s < rsBlocks.length; s++) {
+			if (z < dcdata[s].length) {
+				data[index++] = dcdata[s][z];
+			}
+		}
+	}
+
+	for (var xx = 0; xx < maxEcCount; xx++) {
+		for (var t = 0; t < rsBlocks.length; t++) {
+			if (xx < ecdata[t].length) {
+				data[index++] = ecdata[t][xx];
+			}
+		}
+	}
+
+	return data;
+
+};
+
+module.exports = QRCode;
+
+});
+
+var __QRCode=__req('index'), __QRError=__req('QRErrorCorrectLevel');
+function makeOfflineQRDataURL(text,size,margin){
+ var qr=new __QRCode(-1,__QRError.L); qr.addData(text); qr.make();
+ var n=qr.getModuleCount(), scale=Math.max(1,Math.floor(size/(n+margin*2))), px=(n+margin*2)*scale;
+ var c=document.createElement('canvas'); c.width=px; c.height=px; var x=c.getContext('2d');
+ x.fillStyle='#fff'; x.fillRect(0,0,px,px); x.fillStyle='#000';
+ for(var r=0;r<n;r++) for(var col=0;col<n;col++) if(qr.isDark(r,col)) x.fillRect((col+margin)*scale,(r+margin)*scale,scale,scale);
+ return c.toDataURL('image/png');
+}
+window.makeOfflineQRDataURL=makeOfflineQRDataURL;
+})();
+</script>
+
+<style id="v42-overrides">
+/* V4.2 — publication typography. Primary typography unit: pt. */
+.heading{font-family:"Noto Sans Devanagari","Nirmala UI","Mangal",Arial,sans-serif;font-size:16pt;font-weight:700;line-height:21pt;letter-spacing:0pt;margin:12pt 0 7pt;padding:0;border:0;border-radius:0;text-align:center}
+.chapter-layout{font-family:"Noto Sans Devanagari","Nirmala UI","Mangal",Arial,sans-serif;margin:0 0 8pt;border:1pt solid #000;break-inside:avoid}
+.chapter-no-box{font-family:"Noto Sans Devanagari","Nirmala UI","Mangal",Arial,sans-serif;font-size:24pt;font-weight:800;line-height:24pt;letter-spacing:0pt;padding:3.5pt 6pt;min-height:27mm}
+.chapter-title-box{padding:4pt 9pt}
+.chapter-hi{font-family:"Noto Sans Devanagari","Nirmala UI","Mangal",Arial,sans-serif;font-size:11.5pt;font-weight:700;line-height:15pt;letter-spacing:0pt;white-space:nowrap}
+.chapter-en{font-family:"Noto Sans Devanagari","Nirmala UI","Mangal",Arial,sans-serif;font-size:10pt;font-weight:700;line-height:12.5pt;letter-spacing:0pt;margin-top:1.5pt;white-space:nowrap}
+.subheading{font-family:"Noto Sans Devanagari","Nirmala UI","Mangal",Arial,sans-serif;font-size:14pt;font-weight:700;line-height:19pt;letter-spacing:0pt;padding:0;margin:12pt 0 6pt}
+.miniheading{font-family:"Noto Sans Devanagari","Nirmala UI","Mangal",Arial,sans-serif;font-size:12pt;font-weight:600;line-height:16pt;letter-spacing:0pt;padding:0;margin:8pt 0 4pt}
+.text{font-family:"Noto Sans Devanagari","Nirmala UI","Mangal",Arial,sans-serif;font-size:11pt;font-weight:400;line-height:15.5pt;letter-spacing:0pt;text-align:justify;margin:0 0 5pt;padding:0;border:0;border-radius:0}
+.specialtext{font-family:"Noto Sans Devanagari","Nirmala UI","Mangal",Arial,sans-serif;font-size:11pt;font-weight:400;line-height:15.5pt;letter-spacing:0pt;text-align:left;margin:0 0 5pt;padding:0}
+.checklist{font-family:"Noto Sans Devanagari","Nirmala UI","Mangal",Arial,sans-serif;font-size:11pt;font-weight:400;line-height:15.5pt;letter-spacing:0pt;text-align:left;margin:0 0 5pt;padding:0;white-space:pre-wrap}
+.checklist div{margin:0 0 2.5pt}
+.checklist div::first-letter{font-weight:700}
+.points{font-family:"Noto Sans Devanagari","Nirmala UI","Mangal",Arial,sans-serif;font-size:11pt;font-weight:400;line-height:15.5pt;letter-spacing:0pt;text-align:left;margin:0 0 5pt;padding-left:0}
+.points div{margin:0 0 2.5pt}
+.points div::first-letter{font-weight:700}
+.box{font-family:"Noto Sans Devanagari","Nirmala UI","Mangal",Arial,sans-serif;font-size:11pt;font-weight:500;line-height:15.5pt;letter-spacing:0pt;text-align:left;border:1pt solid #000;border-radius:6pt;padding:8pt 10pt;margin:7pt 0 8pt}
+.quote{font-family:"Noto Sans Devanagari","Nirmala UI","Mangal",Arial,sans-serif;font-size:11pt;font-weight:550;line-height:16pt;letter-spacing:0pt;text-align:center;border:1pt solid #000;border-radius:6pt;padding:8pt 12pt;margin:8pt 0 9pt}
+.sankalp{font-family:"Noto Sans Devanagari","Nirmala UI","Mangal",Arial,sans-serif;font-size:11pt;font-weight:500;line-height:15.5pt;letter-spacing:0pt;text-align:left;border:1pt solid #000;border-radius:6pt;padding:9pt 11pt;margin:0 0 10pt}
+.sankalp .title{font-family:"Noto Sans Devanagari","Nirmala UI","Mangal",Arial,sans-serif;font-size:15pt;font-weight:700;line-height:19pt;letter-spacing:0pt;margin:0 0 6pt}
+.page-num{font-family:"Noto Sans Devanagari","Nirmala UI","Mangal",Arial,sans-serif;font-size:9pt;font-weight:500;line-height:11pt}
+.video-link{font-family:"Noto Sans Devanagari","Nirmala UI","Mangal",Arial,sans-serif;font-size:10pt;font-weight:700;line-height:13pt;letter-spacing:0pt;text-align:center;margin:0 0 5pt;padding:0;gap:8pt}
+.video-link .video-icon{font-size:14pt;margin-right:2pt}
+.video-qr{width:28mm;height:28mm}
+.index-title{font-family:"Noto Sans Devanagari","Nirmala UI","Mangal",Arial,sans-serif;font-size:20pt;font-weight:800;line-height:24pt;letter-spacing:0pt;text-align:center;margin:0 0 7pt}
+.index-content,.index-table{font-family:"Noto Sans Devanagari","Nirmala UI","Mangal",Arial,sans-serif;font-size:9.5pt;line-height:12.5pt}
+.index-table th,.index-table td{border:.75pt solid #000;padding:3.5pt 4pt}
+.index-table th{font-size:9.5pt;font-weight:700;line-height:12pt;text-align:center}
+.index-chapter-row td{font-size:9.5pt}
+.index-chapter-row .idx-no{font-size:9.5pt;font-weight:600;line-height:12pt;text-align:center}
+.index-page .index-chapter-name{font-size:10.5pt;font-weight:700;line-height:13pt;letter-spacing:0pt}
+.index-page .index-en{font-size:9pt;font-weight:650;line-height:11pt;letter-spacing:0pt;margin-top:1pt}
+.index-topics-label{font-size:8.5pt;font-weight:600;line-height:11pt;margin-bottom:2pt}
+.index-topics div{font-size:9.5pt;font-weight:450;line-height:12.5pt;letter-spacing:0pt;margin:1pt 0}
+.index-page .index-page-no{font-size:10pt;font-weight:700;line-height:12pt;text-align:center}
+.block{margin-bottom:0}
+/* Permanent placement anchors — preserved from V4.1. */
+.master-anchor,.video-anchor{position:relative;display:block;width:100%;margin:0 0 5pt;overflow:visible;break-inside:avoid}
+.master-anchor .mastertext,.video-anchor .video-link{position:absolute;left:0;top:0;margin:0;z-index:4}
+.master-anchor .mastertext{touch-action:none;cursor:move;user-select:none;-webkit-user-select:none;white-space:pre-wrap;max-width:100%;color:#000;font-family:"Noto Sans Devanagari","Nirmala UI","Mangal",Arial,sans-serif}
+.master-anchor.permanent .mastertext,.video-anchor.permanent .video-link{cursor:default;touch-action:auto}
+.master-anchor .mastertext.master-editing,.video-anchor .video-link.video-dragging{outline:1px dashed #555;outline-offset:2px}
+.v41-placement-hint{position:absolute;right:4px;top:-18px;font:700 8pt/10pt sans-serif;color:#555;display:none;pointer-events:none}
+.master-anchor.moving .v41-placement-hint,.video-anchor.moving .v41-placement-hint{display:block}
+</style>>
+<script>
+/* ================= V4.1 functional overrides ================= */
+(function(){
+  const V41={masterMargin:5, videoMargin:5};
+  const origMakeBlock=window.makeBlock;
+
+  // Toolbar order + Checklist Text.
+  const tb=document.querySelector('.toolbar');
+  if(tb){
+    const buttons=[...tb.children];
+    const find=t=>buttons.find(b=>b.getAttribute('onclick')===t);
+    const special=find("openEditor('specialtext')"), points=find("openEditor('points')");
+    if(special && points){
+      const cb=document.createElement('button');cb.textContent='☐ Checklist Text';cb.setAttribute('onclick',"openEditor('checklist')");
+      special.after(cb);
+    }
+  }
+
+  // Add Checklist to editor titles and hints.
+  titles.checklist='Checklist Text लिखें';
+  const origOpenEditor=window.openEditor;
+  window.openEditor=function(type){
+    if(type!=='checklist') return origOpenEditor(type);
+    ensureEditablePage(); editorType='checklist'; editingBlock=null; setEditorMode('add');
+    document.getElementById('editorTitle').textContent='Checklist Text लिखें';
+    document.getElementById('chapterFields').style.display='none';
+    document.getElementById('editorText').style.display='block';
+    document.getElementById('pointsHint').style.display='none';
+    document.getElementById('specialTextHint').style.display='block';
+    document.getElementById('specialTextHint').textContent='हर checklist item को नई line में लिखें। Book Maker हर item के आगे □ लगाएगा और page limit के अनुसार items को अगले page पर flow करेगा।';
+    document.getElementById('editorText').value='';
+    document.getElementById('fontSizeControl').style.display='none';
+    document.getElementById('editorModal').style.display='flex';
+    setTimeout(()=>document.getElementById('editorText').focus(),80);
+  };
+
+  const origMakeBlock2=window.makeBlock;
+  window.makeBlock=function(type,val,opts={}){
+    if(type==='checklist'){
+      const b=document.createElement('div');b.className='block checklist';
+      const arr=String(val).split(/\n+/).map(x=>x.trim()).filter(Boolean);
+      b.innerHTML=arr.map(x=>'<div>□ '+esc(x.replace(/^[□☐✓•➜-]\s*/,''))+'</div>').join('');
+      return b;
+    }
+    return origMakeBlock2(type,val,opts);
+  };
+
+  function fitsNow(inner){return inner.scrollHeight<=inner.clientHeight+1;}
+  function newNumbered(){const p=makePage('numbered',false);currentPage=p.querySelector('.page-inner');return currentPage;}
+
+  // Checklist: item-wise pagination.
+  function addChecklist(val){
+    ensureEditablePage();
+    const items=String(val).split(/\n+/).map(x=>x.trim()).filter(Boolean);
+    let i=0;
+    while(i<items.length){
+      let best=i;
+      for(let end=i+1;end<=items.length;end++){
+        const c=window.makeBlock('checklist',items.slice(i,end).join('\n'));
+        currentPage.appendChild(c); const ok=fitsNow(currentPage); c.remove();
+        if(!ok) break; best=end;
+      }
+      if(best===i){newNumbered();continue;}
+      currentPage.appendChild(window.makeBlock('checklist',items.slice(i,best).join('\n')));
+      i=best; if(i<items.length)newNumbered();
+    }
+    renumber();
+  }
+
+  // Master/Video anchor utilities.
+  function anchorOffset(anchor,child){
+    const ar=anchor.getBoundingClientRect(),cr=child.getBoundingClientRect();
+    return {x:Math.max(0,cr.left-ar.left),y:Math.max(0,cr.top-ar.top)};
+  }
+  function setAnchorSize(anchor,child,off){
+    const h=Math.ceil(off.y+child.offsetHeight);
+    anchor.style.height=Math.max(h,child.offsetHeight)+'px';
+    anchor.dataset.offsetX=String(off.x);anchor.dataset.offsetY=String(off.y);
+  }
+  function showPermanentChoice(kind,anchor,child){
+    const title=kind==='Master Text'?'क्या आप permanently paste करना चाहते हैं?':'क्या आप permanently paste करना चाहते हैं?';
+    showChoice(title,[['YES','हाँ — Permanently Paste'],['NO','नहीं — Movable रखें']],choice=>{
+      if(choice==='YES'){
+        anchor.classList.add('permanent');
+        anchor.dataset.permanent='true';
+        const r=anchorOffset(anchor,child); setAnchorSize(anchor,child,r);
+        child.style.cursor='default';
+        saveProjectAuto();toast(kind+' permanently paste हो गया');
+      }else{
+        anchor.classList.remove('permanent');anchor.dataset.permanent='false';
+        // Keep it movable and ask again after the next release.
+        saveProjectAuto();toast(kind+' movable रखा गया');
+      }
+    });
+  }
+
+  function bindAnchorDrag(anchor,child,kind){
+    if(anchor._v41Bound)return; anchor._v41Bound=true;
+    child.addEventListener('pointerdown',e=>{
+      if(anchor.classList.contains('permanent'))return;
+      if(kind==='Video Link' && e.target.closest('a'))return;
+      const r=anchor.getBoundingClientRect(),cr=child.getBoundingClientRect();
+      anchor.classList.add('moving');
+      anchor._drag={sx:e.clientX,sy:e.clientY,x:cr.left-r.left,y:cr.top-r.top};
+      try{child.setPointerCapture(e.pointerId)}catch(_){} e.preventDefault();e.stopPropagation();
+    },{passive:false});
+    child.addEventListener('pointermove',e=>{
+      const d=anchor._drag;if(!d)return;
+      let x=d.x+e.clientX-d.sx,y=d.y+e.clientY-d.sy;
+      x=Math.max(0,Math.min(anchor.clientWidth-child.offsetWidth,x));
+      y=Math.max(0,y);
+      child.style.left=x+'px';child.style.top=y+'px';
+      e.preventDefault();
+    },{passive:false});
+    const end=()=>{
+      if(!anchor._drag)return; anchor._drag=null;anchor.classList.remove('moving');
+      const off=anchorOffset(anchor,child);
+      // Until permanent, the anchor stays in normal flow; on YES its reserved height is frozen.
+      if(anchor.dataset.permanent==='true')setAnchorSize(anchor,child,off);
+      showPermanentChoice(kind,anchor,child);
+    };
+    child.addEventListener('pointerup',end);child.addEventListener('pointercancel',()=>{if(anchor._drag){anchor._drag=null;anchor.classList.remove('moving')}});
+  }
+
+  function masterOptionsFromUI(){
+    return {size:parseFloat(document.getElementById('masterSize').value)||11,font:document.getElementById('masterFont').value||'Noto Sans Devanagari',weight:parseInt(document.getElementById('masterWeight').value,10)||400,line:parseFloat(document.getElementById('masterLineHeight').value)||15.5,align:document.getElementById('masterAlign').value||'left',letter:parseFloat(document.getElementById('masterLetterSpacing').value)||0,margin:parseFloat(document.getElementById('masterMargin').value)||5};
+  }
+  function applyMaster(b,o){
+    b.dataset.fontSize=o.size;b.dataset.fontFamily=o.font;b.dataset.fontWeight=o.weight;b.dataset.lineHeight=o.line;b.dataset.align=o.align;b.dataset.letterSpacing=o.letter;b.dataset.margin=o.margin;
+    b.style.fontFamily='"'+o.font+'", "Noto Sans Devanagari", "Nirmala UI", "Mangal", Arial, sans-serif';
+    b.style.fontSize=o.size+'pt';b.style.fontWeight=o.weight;b.style.lineHeight=o.line+'pt';b.style.textAlign=o.align;b.style.letterSpacing=o.letter+'pt';b.style.marginBottom=o.margin+'pt';
+  }
+  function makeMasterChild(text,o){const b=document.createElement('div');b.className='mastertext';b.textContent=text;applyMaster(b,o);return b;}
+  function makeMasterAnchor(text,o){
+    const a=document.createElement('div');a.className='block master-anchor';a.dataset.permanent='false';
+    const c=makeMasterChild(text,o);a.appendChild(c);
+    const hint=document.createElement('div');hint.className='v41-placement-hint';hint.textContent='Drag → release';a.appendChild(hint);
+    bindAnchorDrag(a,c,'Master Text');return a;
+  }
+  function makeVideoAnchor(title,url,mode){
+    const a=document.createElement('div');a.className='block video-anchor';a.dataset.permanent='false';
+    const c=makeVideoBlock(title,url,mode); c.classList.remove('draggable-video'); c.style.position='absolute';c.style.left='0px';c.style.top='0px';
+    a.appendChild(c);const hint=document.createElement('div');hint.className='v41-placement-hint';hint.textContent='Drag → release';a.appendChild(hint);
+    bindAnchorDrag(a,c,'Video Link');return a;
+  }
+
+  // Split a Master Text into fitting normal-flow chunks without forcing the whole block to the next page.
+  function masterChunks(text,o){
+    const tokens=String(text).match(/\S+\s*/g)||[];
+    if(!tokens.length)return [];
+    const out=[];let pos=0;
+    while(pos<tokens.length){
+      let best=pos;
+      for(let end=pos+1;end<=tokens.length;end++){
+        const c=makeMasterAnchor(tokens.slice(pos,end).join(''),o);currentPage.appendChild(c);
+        // Anchor starts at current flow position; child is at y=0.
+        c.style.height=c.querySelector('.mastertext').offsetHeight+'px';
+        const ok=fitsNow(currentPage);c.remove();if(!ok)break;best=end;
+      }
+      if(best===pos){
+        // Fails only when one token itself is too large; place it on a fresh page rather than losing it.
+        if(currentPage.children.length)newNumbered();
+        const c=makeMasterAnchor(tokens[pos],o);currentPage.appendChild(c);c.style.height=c.querySelector('.mastertext').offsetHeight+'px';out.push(c);pos++;
+      }else{
+        const c=makeMasterAnchor(tokens.slice(pos,best).join(''),o);currentPage.appendChild(c);c.style.height=c.querySelector('.mastertext').offsetHeight+'px';out.push(c);pos=best;if(pos<tokens.length)newNumbered();
+      }
+    }
+    return out;
+  }
+
+  // Replace Master Text public actions.
+  window.openMasterText=function(block=null){
+    ensureEditablePage(); masterEditingBlock=block||null; setMasterMode(!!block);
+    document.getElementById('masterModalTitle').textContent=block?'🧠 Master Text Edit करें':'🧠 Master Text लिखें';
+    const child=block?.classList.contains('master-anchor')?block.querySelector('.mastertext'):block;
+    const vals=child?{text:child.textContent,size:child.dataset.fontSize||11,font:child.dataset.fontFamily||'Noto Sans Devanagari',weight:child.dataset.fontWeight||400,line:child.dataset.lineHeight||15.5,align:child.dataset.align||'left',letter:child.dataset.letterSpacing||0,margin:child.dataset.margin||5}:{text:'',size:11,font:'Noto Sans Devanagari',weight:400,line:15.5,align:'left',letter:0,margin:5};
+    document.getElementById('masterTextInput').value=vals.text;document.getElementById('masterSize').value=vals.size;document.getElementById('masterFont').value=vals.font;document.getElementById('masterWeight').value=vals.weight;document.getElementById('masterLineHeight').value=vals.line;document.getElementById('masterAlign').value=vals.align;document.getElementById('masterLetterSpacing').value=vals.letter;document.getElementById('masterMargin').value=vals.margin;
+    document.getElementById('masterModal').style.display='flex';setTimeout(()=>document.getElementById('masterTextInput').focus(),80);
+  };
+
+  window.insertMasterText=function(){
+    const text=document.getElementById('masterTextInput').value;if(!text.trim()){alert('पहले कुछ लिखें।');return}
+    const o=masterOptionsFromUI();ensureEditablePage();
+    // First try the whole Master Text on the current page. If it does not fit, split and continue.
+    const whole=makeMasterAnchor(text,o);currentPage.appendChild(whole);whole.style.height=whole.querySelector('.mastertext').offsetHeight+'px';
+    if(fitsNow(currentPage)){saveProjectAuto();closeMasterText();toast('Master Text current page में flow के साथ जोड़ दिया गया; drag करके जगह तय करें');return}
+    whole.remove();
+    masterChunks(text,o);saveProjectAuto();closeMasterText();toast('Master Text उपलब्ध जगह के अनुसार pages में flow हो गया');
+  };
+
+  window.updateMasterText=function(){
+    if(!masterEditingBlock)return;
+    const text=document.getElementById('masterTextInput').value;if(!text.trim()){alert('पहले कुछ लिखें।');return}
+    const old=masterEditingBlock,o=masterOptionsFromUI(),child=old.querySelector('.mastertext');
+    child.textContent=text;applyMaster(child,o);
+    const off={x:parseFloat(old.dataset.offsetX||0),y:parseFloat(old.dataset.offsetY||0)};child.style.left=off.x+'px';child.style.top=off.y+'px';
+    setAnchorSize(old,child,off);old.dataset.permanent=old.dataset.permanent||'false';
+    saveProjectAuto();closeMasterText();toast('Master Text update हो गया');
+  };
+
+  window.deleteMasterText=function(){if(masterEditingBlock&&confirm('यह Master Text block हटाएँ?')){masterEditingBlock.remove();masterEditingBlock=null;closeMasterText();saveProjectAuto();toast('Master Text हट गया')}};
+
+  // Video Link insertion: normal-flow anchor first, then movable, then permanent on YES.
+  window.insertVideo=function(){
+    const title=document.getElementById('videoTitle').value.trim(),url=validUrl(document.getElementById('videoUrl').value);
+    if(!url){alert('कृपया सही https:// या http:// video URL डालें।');return}
+    closeVideo();showChoice('Video Link कैसे जोड़ना चाहते हैं?',[['ONLY BARCODE','ONLY BARCODE'],['WITH ICON','WITH ICON']],mode=>{
+      ensureEditablePage();const a=makeVideoAnchor(title,url,mode==='WITH ICON'?'with-icon':'barcode');currentPage.appendChild(a);
+      const c=a.querySelector('.video-link');
+      // 28mm QR is retained. Anchor height reserves the actual rendered content.
+      requestAnimationFrame(()=>{a.style.height=c.offsetHeight+'px';});
+      saveProjectAuto();renumber();toast(mode==='ONLY BARCODE'?'Only barcode current page में जोड़ दिया गया':'Video Link current page में जोड़ दिया गया');
+    });
+  };
+
+  // Double-click editing for anchors.
+  const origOpenEdit=window.openEdit;
+  window.openEdit=function(block){
+    if(block?.classList.contains('master-anchor')){openMasterText(block);return}
+    if(block?.classList.contains('video-anchor')){alert('Video Link को उसके link पर click करके खोला जा सकता है। Drag करके release करने पर permanent placement विकल्प मिलेगा।');return}
+    return origOpenEdit(block);
+  };
+
+  // Type detection for Checklist and anchors.
+  const origGetType=window.getBlockType;
+  window.getBlockType=function(b){
+    if(b?.classList.contains('checklist'))return 'checklist';
+    if(b?.classList.contains('master-anchor'))return 'mastertext';
+    if(b?.classList.contains('video-anchor'))return 'video-link';
+    return origGetType(b);
+  };
+  const origGetText=window.getBlockText;
+  window.getBlockText=function(b){
+    if(b?.classList.contains('master-anchor'))return b.querySelector('.mastertext')?.textContent||'';
+    if(b?.classList.contains('video-anchor'))return b.querySelector('a')?.textContent||'';
+    if(b?.classList.contains('checklist'))return [...b.children].map(x=>x.textContent.replace(/^□\s*/,'' )).join('\n');
+    return origGetText(b);
+  };
+
+  // Ensure imported projects hydrate the new anchor model; old V4 floating blocks remain movable.
+  const oldHydrate=window.hydrateInteractiveBlocks;
+  window.hydrateInteractiveBlocks=function(){
+    oldHydrate();
+    document.querySelectorAll('.master-anchor').forEach(a=>{const c=a.querySelector('.mastertext');if(c){bindAnchorDrag(a,c,'Master Text');if(a.dataset.permanent==='true')setAnchorSize(a,c,{x:parseFloat(a.dataset.offsetX||0),y:parseFloat(a.dataset.offsetY||0)});}});
+    document.querySelectorAll('.video-anchor').forEach(a=>{const c=a.querySelector('.video-link');if(c){bindAnchorDrag(a,c,'Video Link');if(a.dataset.permanent==='true')setAnchorSize(a,c,{x:parseFloat(a.dataset.offsetX||0),y:parseFloat(a.dataset.offsetY||0)});}});
+  };
+
+  // Route editor insertion for Checklist.
+  const oldInsertEdited=window.insertEdited;
+  window.insertEdited=function(){
+    if(editorType==='checklist'){
+      const val=document.getElementById('editorText').value;if(!val.trim()){alert('पहले कुछ लिखें।');return}
+      addChecklist(val);saveProjectAuto();closeEditor();toast('Checklist Text page limit के अनुसार जोड़ दिया गया');return;
+    }
+    return oldInsertEdited();
+  };
+
+  // Master/Video anchors must be counted as blocks by page deletion/edit flows.
+  const oldCollect=window.collectWordParts;
+  window.collectWordParts=function(){
+    // Use original collector after temporarily exposing anchor children as blocks is unnecessary; build a clean manuscript list.
+    let out=[];document.querySelectorAll('.page').forEach(p=>{
+      if(p.classList.contains('index-page')){const rows=[...p.querySelectorAll('tr')].map(tr=>[...tr.children].map(td=>td.innerText.trim()));if(rows.length)out.push({type:'table',rows});return}
+      p.querySelectorAll('.page-inner > .block').forEach(b=>{
+        if(b.classList.contains('master-anchor'))out.push({type:'p',text:b.querySelector('.mastertext')?.textContent||''});
+        else if(b.classList.contains('video-anchor'))out.push({type:'p',text:'वीडियो: '+(b.querySelector('a')?.href||b.dataset.videoUrl||'')});
+        else if(b.classList.contains('checklist'))[...b.children].forEach(x=>out.push({type:'p',text:x.textContent}));
+        else if(b.classList.contains('chapter-layout'))out.push({type:'p',text:`अध्याय ${b.dataset.chapterNo||''} — ${b.dataset.chapterHindi||''} (${b.dataset.chapterEnglish||''})`,bold:true});
+        else if(b.classList.contains('points'))[...b.children].forEach(x=>out.push({type:'p',text:'• '+x.textContent.replace(/^•\s*/,'' )}));
+        else if(b.classList.contains('sankalp')){out.push({type:'p',text:'अध्याय का संकल्प',bold:true});[...b.children].filter(x=>!x.classList.contains('title')).forEach(x=>out.push({type:'p',text:x.textContent}));}
+        else out.push({type:'p',text:b.textContent,align:b.style.textAlign||'left',bold:b.classList.contains('heading')||b.classList.contains('subheading')||b.classList.contains('miniheading')||b.classList.contains('quote')});
+      });
+    });return out;
+  };
+
+  // Help text update.
+  const help=document.querySelector('.help');if(help)help.innerHTML='<b>Automatic Page Limit ON है:</b> हर 5.5×8.5 inch page की fixed content limit है। Normal Text, Checklist, Points, Box, Quote, Sankalp, Special Normal Text, Master Text और Video Link उपलब्ध जगह के अनुसार current page में flow होते हैं; जरूरत होने पर अगला page अपने आप बनता है। Master Text/Video Link को drag करके जगह तय करें। release करने पर <b>“क्या आप permanently paste करना चाहते हैं?”</b> पूछा जाएगा। <b>हाँ</b> पर block उसी जगह flow-reserved होकर permanent हो जाएगा; <b>नहीं</b> पर वह movable रहेगा और अगली release पर फिर पूछा जाएगा।';
+
+  // Master modal labels/controls: pt primary unit.
+  const ms=document.getElementById('masterSize');if(ms){ms.min=8;ms.max=30;ms.step=.5;ms.value=11;ms.previousElementSibling&&(ms.previousElementSibling.textContent='Font Size (pt)')}
+  const mw=document.getElementById('masterWeight');if(mw){mw.min=400;mw.max=800;mw.step=50;mw.value=400}
+  const ml=document.getElementById('masterLineHeight');if(ml){ml.min=8;ml.max=40;ml.step=.5;ml.value=15.5;ml.previousElementSibling&&(ml.previousElementSibling.textContent='Line Height (pt)')}
+  const mls=document.getElementById('masterLetterSpacing');if(mls){mls.min=-1;mls.max=2;mls.step=.1;mls.value=0;mls.previousElementSibling&&(mls.previousElementSibling.textContent='Letter Spacing (pt)')}
+  const mm=document.getElementById('masterMargin');if(mm){mm.min=0;mm.max=30;mm.step=.5;mm.value=5;mm.previousElementSibling&&(mm.previousElementSibling.textContent='Paragraph Bottom Space (pt)')}
+
+})();
+</script>
+
+<style id="v42-ui-locks">
+#fontSizeControl,#editFontSizeControl{display:none!important}
+#masterFont{opacity:.75;cursor:not-allowed}
+</style>
+<script>
+/* V4.2 fixed typography for all non-Master text tools. Master remains editable except font family, which is fixed to Noto Sans Devanagari. */
+(function(){
+  const FONT='"Noto Sans Devanagari", "Nirmala UI", "Mangal", Arial, sans-serif';
+  const T={
+    heading:{size:16,line:21,weight:700,letter:0,align:'center',top:12,bottom:7},
+    chapterNo:{size:24,line:24,weight:800,letter:0,align:'center',pv:3.5,ph:6},
+    chapterHi:{size:11.5,line:15,weight:700,letter:0,align:'center',pv:4,ph:9},
+    chapterEn:{size:10,line:12.5,weight:700,letter:0,align:'center',top:1.5},
+    subheading:{size:14,line:19,weight:700,letter:0,align:'left',top:12,bottom:6},
+    miniheading:{size:12,line:16,weight:600,letter:0,align:'left',top:8,bottom:4},
+    text:{size:11,line:15.5,weight:400,letter:0,align:'justify',top:0,bottom:5,pdist:5},
+    specialtext:{size:11,line:15.5,weight:400,letter:0,align:'left',top:0,bottom:5,pdist:5},
+    checklist:{size:11,line:15.5,weight:400,letter:0,align:'left',top:0,bottom:5,pdist:2.5},
+    points:{size:11,line:15.5,weight:400,letter:0,align:'left',top:0,bottom:5,pdist:2.5},
+    box:{size:11,line:15.5,weight:500,letter:0,align:'left',top:7,bottom:8,pv:8,ph:10,border:1,radius:6},
+    quote:{size:11,line:16,weight:550,letter:0,align:'center',top:8,bottom:9,pv:8,ph:12,border:1,radius:6},
+    sankalp:{size:11,line:15.5,weight:500,letter:0,align:'left',top:0,bottom:10,pv:9,ph:11,border:1,radius:6},
+    sankalpTitle:{size:15,line:19,weight:700,letter:0,align:'left',bottom:6},
+    indexTitle:{size:20,line:24,weight:800,letter:0,align:'center',bottom:7},
+    indexHi:{size:10.5,line:13,weight:700,letter:0},
+    indexEn:{size:9,line:11,weight:650,letter:0,top:1},
+    indexLabel:{size:8.5,line:11,weight:600,letter:0,bottom:2},
+    indexTopics:{size:9.5,line:12.5,weight:450,letter:0,pdist:1},
+    indexNo:{size:9.5,line:12,weight:600,letter:0,align:'center'},
+    indexPage:{size:10,line:12,weight:700,letter:0,align:'center'}
+  };
+  function apply(el,o){
+    if(!el)return; el.style.fontFamily=FONT;
+    if(o.size!=null)el.style.fontSize=o.size+'pt';
+    if(o.line!=null)el.style.lineHeight=o.line+'pt';
+    if(o.weight!=null)el.style.fontWeight=o.weight;
+    if(o.letter!=null)el.style.letterSpacing=o.letter+'pt';
+    if(o.align)el.style.textAlign=o.align;
+    if(o.top!=null)el.style.marginTop=o.top+'pt';
+    if(o.bottom!=null)el.style.marginBottom=o.bottom+'pt';
+    if(o.pv!=null)el.style.paddingTop=el.style.paddingBottom=o.pv+'pt';
+    if(o.ph!=null)el.style.paddingLeft=el.style.paddingRight=o.ph+'pt';
+    if(o.border!=null)el.style.borderWidth=o.border+'pt';
+    if(o.radius!=null)el.style.borderRadius=o.radius+'pt';
+  }
+  function applyAll(){
+    document.querySelectorAll('.page .heading').forEach(e=>apply(e,T.heading));
+    document.querySelectorAll('.page .chapter-layout').forEach(e=>{apply(e,{letter:0,bottom:8});apply(e.querySelector('.chapter-no-box'),T.chapterNo);apply(e.querySelector('.chapter-title-box'),{pv:4,ph:9});apply(e.querySelector('.chapter-hi'),T.chapterHi);apply(e.querySelector('.chapter-en'),T.chapterEn);});
+    document.querySelectorAll('.page .subheading').forEach(e=>apply(e,T.subheading));
+    document.querySelectorAll('.page .miniheading').forEach(e=>apply(e,T.miniheading));
+    document.querySelectorAll('.page .text').forEach(e=>apply(e,T.text));
+    document.querySelectorAll('.page .specialtext').forEach(e=>apply(e,T.specialtext));
+    document.querySelectorAll('.page .checklist').forEach(e=>{apply(e,T.checklist);e.querySelectorAll(':scope > div').forEach(x=>x.style.marginBottom='2.5pt');e.querySelectorAll(':scope > div').forEach(x=>x.style.fontFamily=FONT);});
+    document.querySelectorAll('.page .points').forEach(e=>{apply(e,T.points);e.querySelectorAll(':scope > div').forEach(x=>x.style.marginBottom='2.5pt');});
+    document.querySelectorAll('.page .box').forEach(e=>apply(e,T.box));
+    document.querySelectorAll('.page .quote').forEach(e=>apply(e,T.quote));
+    document.querySelectorAll('.page .sankalp').forEach(e=>{apply(e,T.sankalp);apply(e.querySelector('.title'),T.sankalpTitle);});
+    document.querySelectorAll('.page .video-link').forEach(e=>{apply(e,{size:10,line:13,weight:700,letter:0,align:'center',bottom:5});const icon=e.querySelector('.video-icon');if(icon){icon.style.fontFamily=FONT;icon.style.fontSize='14pt';icon.style.marginRight='2pt'}});
+    document.querySelectorAll('.page .index-title').forEach(e=>apply(e,T.indexTitle));
+    document.querySelectorAll('.page .index-table th').forEach(e=>apply(e,{size:9.5,line:12,weight:700,align:'center'}));
+    document.querySelectorAll('.page .index-table td').forEach(e=>{e.style.fontFamily=FONT;e.style.borderWidth='.75pt';e.style.padding='3.5pt 4pt'});
+    document.querySelectorAll('.page .index-chapter-name').forEach(e=>apply(e,T.indexHi));
+    document.querySelectorAll('.page .index-en').forEach(e=>apply(e,T.indexEn));
+    document.querySelectorAll('.page .index-topics-label').forEach(e=>apply(e,T.indexLabel));
+    document.querySelectorAll('.page .index-topics div').forEach(e=>apply(e,T.indexTopics));
+    document.querySelectorAll('.page .idx-no').forEach(e=>apply(e,T.indexNo));
+    document.querySelectorAll('.page .index-page-no').forEach(e=>apply(e,T.indexPage));
+    document.querySelectorAll('.page .mastertext').forEach(e=>{e.style.fontFamily=FONT;});
+    document.querySelectorAll('.page .page-num').forEach(e=>e.style.fontFamily=FONT);
+  }
+  window.__v42ApplyTypography=applyAll;
+
+  // Fixed tools: no font-size selector; defaults are permanently enforced.
+  window.setFontSizeOptions=function(){const e=document.getElementById('fontSizeControl');if(e)e.style.display='none';};
+  window.setEditFontSizeOptions=function(){const e=document.getElementById('editFontSizeControl');if(e)e.style.display='none';};
+
+  // Fixed makeBlock wrapper. Preserve all V4.1 behavior and only replace typography.
+  const baseMake=window.makeBlock;
+  window.makeBlock=function(type,val,opts){
+    if(type==='checklist')return baseMake(type,val,opts);
+    const b=baseMake(type,val,opts);
+    if(type==='heading')apply(b,T.heading);
+    else if(type==='subheading')apply(b,T.subheading);
+    else if(type==='miniheading')apply(b,T.miniheading);
+    else if(type==='text')apply(b,T.text);
+    else if(type==='specialtext')apply(b,T.specialtext);
+    else if(type==='points')apply(b,T.points);
+    else if(type==='box')apply(b,T.box);
+    else if(type==='quote')apply(b,T.quote);
+    else if(type==='sankalp'){apply(b,T.sankalp);apply(b.querySelector('.title'),T.sankalpTitle);}
+    return b;
+  };
+  const baseChapter=window.makeChapterBlock;
+  window.makeChapterBlock=function(no,hi,en){const b=baseChapter(no,hi,en);apply(b,{bottom:8});apply(b.querySelector('.chapter-no-box'),T.chapterNo);apply(b.querySelector('.chapter-title-box'),{pv:4,ph:9});apply(b.querySelector('.chapter-hi'),T.chapterHi);apply(b.querySelector('.chapter-en'),T.chapterEn);return b;};
+
+  // Fixed editor insertion/update for Heading/Sub/Mini; preserve Heading alignment choice popup.
+  window.insertEdited=function(){
+    if(editorType==='chapter'){
+      const no=document.getElementById('chapterNo').value.trim(),hi=document.getElementById('chapterHindi').value.trim(),en=document.getElementById('chapterEnglish').value.trim();
+      if(!no||!hi||!en){alert('Chapter No., Hindi Chapter Name और English Chapter Name तीनों भरें।');return}
+      const b=window.makeChapterBlock(no,hi,en);currentPage.appendChild(b);if(!fits(currentPage)){b.remove();const p=makePage('numbered',false);currentPage=p.querySelector('.page-inner');currentPage.appendChild(window.makeChapterBlock(no,hi,en));}renumber();saveProjectAuto();closeEditor();toast('Chapter Heading page में जोड़ दिया गया');return;
+    }
+    const val=document.getElementById('editorText').value;if(!val.trim()){alert('पहले कुछ लिखें।');return}
+    if(editorType==='checklist'){
+      const items=String(val).split(/\n+/).map(x=>x.trim()).filter(Boolean);
+      let i=0;
+      while(i<items.length){
+        let best=i;
+        for(let end=i+1;end<=items.length;end++){
+          const c=window.makeBlock('checklist',items.slice(i,end).join('\n'));
+          currentPage.appendChild(c);
+          const ok=fits(currentPage);
+          c.remove();
+          if(!ok)break;
+          best=end;
+        }
+        if(best===i){
+          const p=makePage('numbered',false);currentPage=p.querySelector('.page-inner');
+          continue;
+        }
+        currentPage.appendChild(window.makeBlock('checklist',items.slice(i,best).join('\n')));
+        i=best;
+        if(i<items.length){const p=makePage('numbered',false);currentPage=p.querySelector('.page-inner');}
+      }
+      renumber();saveProjectAuto();closeEditor();toast('Checklist Text page limit के अनुसार जोड़ दिया गया');return;
+    }
+    if(['heading','subheading','miniheading'].includes(editorType)){
+      const align=editorType==='heading'?'center':'left';const b=window.makeBlock(editorType,val.trim(),{align});currentPage.appendChild(b);
+      if(!fits(currentPage)){b.remove();const p=makePage('numbered',false);currentPage=p.querySelector('.page-inner');currentPage.appendChild(window.makeBlock(editorType,val.trim(),{align}));}
+      const target=currentPage.lastElementChild;saveProjectAuto();closeEditor();
+      if(editorType==='heading')showChoice('Heading कहाँ जोड़ना चाहते हैं?',[['CENTER','CENTER'],['LEFT','LEFT']],choice=>{target.style.textAlign=choice==='LEFT'?'left':'center';target.dataset.align=target.style.textAlign;saveProjectAuto();toast('Heading जोड़ दी गई');});
+      else toast(titles[editorType]+' page में जोड़ दिया गया');return;
+    }
+    if(editorType==='specialtext'||editorType==='points'){addContentWithAutoPagination(editorType,val,{size:11});saveProjectAuto();closeEditor();toast(editorType==='points'?'Points page में जोड़ दिए गए':'Special Normal Text page में जोड़ दिया गया');return;}
+    if(editorType==='box'||editorType==='quote'||editorType==='sankalp'){const type=editorType;closeEditor();showChoice(titles[type]+' कैसे जोड़ना चाहते हैं?',[['WITH BOX','WITH BOX'],['WITHOUT BOX','WITHOUT BOX']],mode=>{addContentWithAutoPagination(type,val.trim(),{boxed:mode==='WITH BOX'});saveProjectAuto();toast(mode==='WITH BOX'?'Box के साथ जोड़ दिया गया':'बिना Box के जोड़ दिया गया');});return;}
+    addContentWithAutoPagination(editorType,val);saveProjectAuto();closeEditor();toast('Content page limit के अनुसार लगा दिया गया');
+  };
+
+  // Fixed editor update for Heading/Sub/Mini; other edit behavior stays V4.1.
+  const v42OriginalUpdateEdited=window.updateEdited;
+  window.updateEdited=function(){
+    if(editingBlock && ['heading','subheading','miniheading'].includes(getBlockType(editingBlock))){
+      const type=getBlockType(editingBlock),val=document.getElementById('editorText').value.trim();if(!val){alert('पहले कुछ लिखें।');return}
+      const align=editingBlock.dataset.align|| (type==='heading'?'center':'left'),target=editingBlock.closest('.page-inner'),replacement=window.makeBlock(type,val,{align});editingBlock.replaceWith(replacement);if(!fits(target)){replacement.remove();alert('यह content इस page में fit नहीं हो रहा।');return}saveProjectAuto();closeEditor();editingBlock=null;toast(titles[type]+' update हो गई');return;
+    }
+    // Delegate chapter, master, and other V4.1 edit cases to the original implementation after hiding size UI.
+    return v42OriginalUpdateEdited.apply(this,arguments);
+  };
+
+  // Master defaults/units. Font family fixed; other controls remain editable.
+  const ms=document.getElementById('masterSize');if(ms){ms.min=8;ms.max=30;ms.step=.5;ms.value=11}
+  const mw=document.getElementById('masterWeight');if(mw){mw.min=400;mw.max=800;mw.step=50;mw.value=400}
+  const ml=document.getElementById('masterLineHeight');if(ml){ml.min=8;ml.max=40;ml.step=.5;ml.value=15.5}
+  const mls=document.getElementById('masterLetterSpacing');if(mls){mls.min=-1;mls.max=2;mls.step=.1;mls.value=0}
+  const mm=document.getElementById('masterMargin');if(mm){mm.min=0;mm.max=30;mm.step=.5;mm.value=5}
+
+  // Force Master font selector to Noto only.
+  const mf=document.getElementById('masterFont');if(mf){mf.value='Noto Sans Devanagari';mf.disabled=true}
+
+  // Re-run typography after every layout mutation and after imported projects.
+  const oldHydrate=window.hydrateInteractiveBlocks;
+  window.hydrateInteractiveBlocks=function(){oldHydrate();applyAll();};
+  const oldSave=window.saveProject;
+  window.saveProject=function(){return oldSave.apply(this,arguments)};
+  setTimeout(applyAll,100);
+})();
+</script>
+
+<style id="v42-only-corrections">
+/* ONLY requested Chapter Heading correction. */
+.chapter-hi{font-size:11.5pt!important;line-height:15pt!important;white-space:nowrap!important}
+ .box{text-align:center!important}
+/* Mirror Margins: 0.625in inside / 0.500in outside, alternating by numbered page side. */
+.page.odd-page{padding-left:15.875mm!important;padding-right:12.7mm!important}
+.page.even-page{padding-left:12.7mm!important;padding-right:15.875mm!important}
+.index-page.odd-page{padding-left:15.875mm!important;padding-right:12.7mm!important}
+.index-page.even-page{padding-left:12.7mm!important;padding-right:15.875mm!important}
+@media print{
+ .page.odd-page{padding-left:15.875mm!important;padding-right:12.7mm!important}
+ .page.even-page{padding-left:12.7mm!important;padding-right:15.875mm!important}
+ .index-page.odd-page{padding-left:15.875mm!important;padding-right:12.7mm!important}
+ .index-page.even-page{padding-left:12.7mm!important;padding-right:15.875mm!important}
+}
+</style>
+<script>
+/* V4.2 final correction: keep Mirror Margins as a real page-architecture function. */
+(function(){
+  window.applyMirrorMargins=function(){
+    let n=0;
+    document.querySelectorAll('.page').forEach(function(p){
+      p.classList.remove('odd-page','even-page');
+      if(p.classList.contains('prelim-page')) return;
+      n++;
+      p.classList.add(n%2?'odd-page':'even-page');
+    });
+  };
+  const oldRenumber=window.renumber;
+  if(typeof oldRenumber==='function'){
+    window.renumber=function(){
+      oldRenumber.apply(this,arguments);
+      window.applyMirrorMargins();
+    };
+  }
+  window.applyMirrorMargins();
+})();
+</script>
+
+<style id="chapter-heading-final-fix">
+/* Chapter Heading only — exact requested specification */
+.chapter-layout{display:grid!important;grid-template-columns:28mm minmax(0,1fr)!important;min-height:27mm!important;border:1pt solid #000!important;margin:0 0 8pt!important;break-inside:avoid!important;overflow:hidden!important;}
+.chapter-no-box{font-size:24pt!important;font-weight:800!important;line-height:24pt!important;letter-spacing:0pt!important;padding:3.5pt 6pt!important;min-height:27mm!important;}
+.chapter-title-box{padding:4pt 9pt!important;min-width:0!important;}
+.chapter-hi{font-size:11.5pt!important;font-weight:700!important;line-height:15pt!important;letter-spacing:0pt!important;text-align:center!important;white-space:nowrap!important;}
+.chapter-en{font-size:10pt!important;font-weight:700!important;line-height:12.5pt!important;letter-spacing:0pt!important;text-align:center!important;margin-top:1.5pt!important;white-space:nowrap!important;}
+</style>
+</body>
+</html>
